@@ -4,3 +4,41 @@
   padding: 2rem;
   text-align: center;
 }
+
+.playlist-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.playlist-card {
+  padding: 25px 60px;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.729);
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+  color: black;
+  border-radius: 2px;
+}
+.playlist-card .playlist-info h2 {
+  margin: 0;
+}
+.playlist-card .playlist-info p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.385);
+  text-align: left;
+}
+
+.playlist-icons {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  color: rgba(0, 0, 0, 0.385);
+  align-self: flex-start;
+  font-size: 13px;
+}
+.playlist-icons .icon:hover {
+  transform: scale(1.15);
+}/*# sourceMappingURL=app.css.map */
