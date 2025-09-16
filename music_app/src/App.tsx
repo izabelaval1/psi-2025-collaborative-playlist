@@ -5,10 +5,14 @@ import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 
 function App() {
-  const playlists = [
+  const [playlists, setPlaylists]= useState([
     { id: 1, name: 'Chill Vibes', description: 'Relaxing music' },
     { id: 2, name: 'Workout', description: 'Pump up songs' },
-  ];
+  ]);
+
+  const deletePlaylist = (id: number) => {
+    setPlaylists(playlists.filter(playlist => playlist.id !== id));
+  }
 
   const displayPlaylists = () => {
     return playlists.map((playlist) => (
@@ -19,11 +23,15 @@ function App() {
         </div>
         <div className="playlist-icons">
           <FontAwesomeIcon icon={faEdit} className="icon" />
-          <FontAwesomeIcon icon={faTrash} className="icon" />
+          <FontAwesomeIcon icon={faTrash} className="icon" 
+          onClick={() => deletePlaylist(playlist.id)}
+          />
         </div>
       </div>
     ));
   };
+
+  
 
   return (
     <div className="playlist-container">{displayPlaylists()}</div>
