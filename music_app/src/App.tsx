@@ -2,12 +2,41 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
+  const [isPopupOpen, setPopupOpen] = useState(false);
+
   return (
     <div>
       <h1>Playlists : </h1>
-      <button>+</button>
+      <MyButton onClick={() => setPopupOpen(true)} />
+      {isPopupOpen && (
+        <MyPopup onClose={() => setPopupOpen(false)} />
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+function MyButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+    >
+      +
+    </button>
+  );
+}
+
+function MyPopup({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="popup-overlay">
+      <div className="popup-content">
+        <h2>Popup content</h2>
+        <button onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default App;
