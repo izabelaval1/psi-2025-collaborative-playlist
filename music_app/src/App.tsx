@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import './App.css'
+import PlaylistList from './components/PlaylistList'
+
 
 function App() {
+
   const [isPopupOpen, setPopupOpen] = useState(false);
 
   return (
     <div>
-      <h1>Playlists : </h1>
+      
       <MyButton onClick={() => setPopupOpen(true)} />
       {isPopupOpen && (
         <MyPopup onClose={() => setPopupOpen(false)} />
       )}
+      <h1>Playlists : </h1>
+      <PlaylistList />
     </div>
   );
 }

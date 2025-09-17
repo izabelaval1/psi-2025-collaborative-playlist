@@ -1,0 +1,50 @@
+#root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+  }
+  .playlist-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    
+  }
+  .playlist-card {
+    margin-top: 20px;
+    padding: 25px 60px;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.729);
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+    color: black;
+    border-radius: 2px;
+    .playlist-info {
+        h2 {
+            margin: 0;
+        }
+        p {
+            margin: 0;
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.385);
+            text-align: left;
+        }
+    }
+  }
+  
+  .playlist-icons {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    color: rgba(0, 0, 0, 0.385);
+    align-self: flex-start;
+    font-size: 13px;
+    .icon {
+        &:hover {
+            transform: scale(1.15);
+
+        }
+    }
+
+  }
