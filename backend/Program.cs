@@ -1,17 +1,32 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers(); // ✅ registers controllers
-builder.Services.AddOpenApi(); 
+builder.Services.AddControllers();
+builder.Services.AddHttpClient();
+
+// ✅ Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost5173",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173") // your frontend origin
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
+// Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 
-app.MapControllers(); // ✅ this is required for HelloController to work
+app.UseRouting();
+
+// ✅ Enable CORS
+app.UseCors("AllowLocalhost5173");
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
