@@ -3,6 +3,7 @@ import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
 
 type Playlist = {
+  id: number;
   name: string;
   description: string;
   songs: any[];
@@ -15,14 +16,14 @@ export default function PlaylistList() {
 
   // loads data from backend
   useEffect(() => {
-    fetch("http://localhost:5000/api/playlist")
+    fetch("http://localhost:5000/api/playlists")
       .then(res => res.json())
       .then(data => setPlaylists(data));
   }, []);
 
   // creates new playlist
   const createPlaylist = () => {
-    fetch("http://localhost:5000/api/playlist", {
+    fetch("http://localhost:5000/api/playlists", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, description, songs: [] })
@@ -35,12 +36,14 @@ export default function PlaylistList() {
   };
 
   // deletes playlist
-  const deletePlaylist = (playlistName: string) => {
-    fetch(`http://localhost:5000/api/playlist/${playlistName}`, {
+  const deletePlaylist = (playlistId: number) => {
+    fetch(`http://localhost:5000/api/playlists/${playlistId}`, {
       method: "DELETE"
     })
-      .then(res => res.json())
-      .then(updatedList => setPlaylists(updatedList));
+    .then(() => {
+      setPlaylists(playlists.filter(p => p.id !== playlistId));           //update state manually
+    });
+
   };
 
   return (
@@ -59,8 +62,8 @@ export default function PlaylistList() {
       <button onClick={createPlaylist}>Create</button>
 
       <h2>Playlists:</h2> 
-      {playlists.map((playlist, i) => (
-        <div key={i} className="playlist-card">
+      {playlists.map((playlist) => (
+        <div key={playlist.id} className="playlist-card">
           <div className="playlist-info">
             <h2>{playlist.name}</h2>
             <p>{playlist.description}</p>
@@ -70,7 +73,7 @@ export default function PlaylistList() {
             <FontAwesomeIcon
               icon={faTrash}
               className="icon"
-              onClick={() => deletePlaylist(playlist.name)} // ← aktyvuota šiukšliadėžė
+              onClick={() => deletePlaylist(playlist.id)} // ← aktyvuota šiukšliadėžė
             />
           </div>
         </div>
