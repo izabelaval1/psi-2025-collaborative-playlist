@@ -1,0 +1,27 @@
+[
+    {
+      "id": 1,
+      "name": "Focus Beats",
+      "description": "Music to help you concentrate",
+      "songs": []
+    },
+    {
+      "id": 2,
+      "name": "Workout Pump",
+      "description": "Energetic songs for the gym",
+      "songs": []
+    },
+    {
+      "id": 3,
+      "name": "Chill Vibes",
+      "description": "Relax and unwind with these tracks",
+      "songs": []
+    },
+    {
+      "id": 4,
+      "name": "Party Hits",
+      "description": "Upbeat songs to keep the party going",
+      "songs": []
+    }
+  ]
+  
