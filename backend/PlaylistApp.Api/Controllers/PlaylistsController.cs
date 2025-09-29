@@ -8,7 +8,7 @@ namespace MyApi.Controllers
     [Route("api/[controller]")] // url will be api/playlist (according to the name of the controller)
     public class PlaylistsController : ControllerBase
     {
-      
+
         private static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "playlists1.json"); //// json file location
 
         // Helper function reads all playlists from the JSON file
@@ -87,23 +87,6 @@ namespace MyApi.Controllers
             return CreatedAtAction(nameof(GetPlaylistById), new { id = newPlaylist.Id }, newPlaylist); // Return 201 Created
         }
 
-        // PUT /api/playlists/{id} -> full update (replace name & description)
-        [HttpPut("{id:int}")]
-        public IActionResult UpdatePlaylist(int id, [FromBody] Playlist updatedPlaylist)
-        {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Id == id); // find playlist by ID
-            if (playlist == null)
-                return NotFound(); // If not found → 404
-
-            // Overwrite fields
-            playlist.Name = updatedPlaylist.Name;
-            playlist.Description = updatedPlaylist.Description;
-
-            SavePlaylists(playlists); 
-            return Ok(playlist); // return updated playlist
-        }
-
         // PATCH /api/playlists/{id} -> partial update (only update provided fields)
         [HttpPatch("{id:int}")]
         public IActionResult EditPlaylist(int id, [FromBody] Playlist editedPlaylist)
@@ -133,8 +116,8 @@ namespace MyApi.Controllers
             if (playlist == null)
                 return NotFound();
 
-            playlists.Remove(playlist); 
-            SavePlaylists(playlists); 
+            playlists.Remove(playlist);
+            SavePlaylists(playlists);
 
             return NoContent(); // 204
         }
@@ -153,5 +136,40 @@ namespace MyApi.Controllers
 
             return NoContent(); // return 204 
         }
+        
+        // PUT /api/playlists/by-id/{id} -> full update by ID
+        [HttpPut("by-id/{id:int}")]
+        public IActionResult UpdatePlaylistById(int id, [FromBody] Playlist updatedPlaylist)
+        {
+            var playlists = LoadPlaylists();
+            var playlist = playlists.FirstOrDefault(p => p.Id == id);
+            if (playlist == null)
+                return NotFound();
+
+            playlist.Name = updatedPlaylist.Name;
+            playlist.Description = updatedPlaylist.Description;
+            playlist.Songs = updatedPlaylist.Songs;
+
+            SavePlaylists(playlists);
+            return Ok(playlist);
+        }
+
+        // PUT /api/playlists/by-name/{name} -> full update by Name
+        [HttpPut("by-name/{name}")]
+        public IActionResult UpdatePlaylistByName(string name, [FromBody] Playlist updatedPlaylist)
+        {
+            var playlists = LoadPlaylists();
+            var playlist = playlists.FirstOrDefault(p => p.Name == name);
+            if (playlist == null)
+                return NotFound();
+
+            playlist.Name = updatedPlaylist.Name;
+            playlist.Description = updatedPlaylist.Description;
+            playlist.Songs = updatedPlaylist.Songs;
+
+            SavePlaylists(playlists);
+            return Ok(playlist);
+        }
+
     }
 }
