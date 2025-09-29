@@ -1,0 +1,49 @@
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.userprefs
+*.csproj.user
+
+# .NET artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.sourcelink.json
+*.mdb
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+*.nuspec
+*.psmdcp
+
+# Logs
+*.log
+
+# Others
+*.db
+*.jfm
+*.tmp
+*.bak
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
