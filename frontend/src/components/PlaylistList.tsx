@@ -1,13 +1,8 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect } from 'react';
-
-type Playlist = {
-  id: number;
-  name: string;
-  description: string;
-  songs: any[];
-};//what playlist will look like in frontend, matches backend playlist model
+import type {Playlist } from '../types/Playlist';
+import "../styles/Playlists.scss";
 
 export default function PlaylistList() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -26,19 +21,6 @@ export default function PlaylistList() {
       .then(data => setPlaylists(data));
   }, []);
 
-  // create playlist
-  const createPlaylist = () => {
-    fetch("http://localhost:5000/api/playlists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description, songs: [] })
-    })
-      .then(res => res.json())
-      .then(newPlaylist => setPlaylists([...playlists, newPlaylist]));
-
-    setName("");
-    setDescription("");
-  };
 
   // delete playlist
   const deletePlaylist = (playlistId: number) => {
@@ -72,20 +54,7 @@ export default function PlaylistList() {
 
   return (
     <div className="playlist-container">
-      <h2>Create new playlist</h2>
-      <input
-        placeholder="Playlist name"
-        value={name}
-        onChange={e => setName(e.target.value)}
-      />
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-      />
-      <button onClick={createPlaylist}>Create</button>
-
-      <h2>Playlists:</h2>
+      <h2 className="playlist-title">Playlists:</h2>
       {playlists.map((playlist) => (
         <div key={playlist.id} className="playlist-card">
           {editingId === playlist.id ? (
@@ -104,8 +73,8 @@ export default function PlaylistList() {
           ) : (
             <>
               <div className="playlist-info">
-                <h2>{playlist.name}</h2>
-                <p>{playlist.description}</p>
+                <h2 className="playlist-name">{playlist.name}</h2>
+                <p className='playlist-desc'>{playlist.description}</p>
               </div>
               <div className="playlist-icons">
                 <FontAwesomeIcon
