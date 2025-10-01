@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace MyApi.Controllers
 {
-    [ApiController] // web api controller 
+    [ApiController] //need this in controllers, it validates requests, throws error responses and other stuff 
     [Route("api/[controller]")] // url will be api/playlist (according to the name of the controller)
     public class PlaylistsController : ControllerBase
     {
@@ -152,22 +152,6 @@ namespace MyApi.Controllers
 
             return NoContent(); // 204
         }
-
-        // DELETE /api/playlists/by-name/{name} -> delete playlist by name
-        [HttpDelete("by-name/{name}")]
-        public IActionResult DeletePlaylistByName(string name)
-        {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Name == name);
-            if (playlist == null)
-                return NotFound();
-
-            playlists.Remove(playlist);
-            SavePlaylists(playlists);
-
-            return NoContent(); // return 204 
-        }
-
         // PUT /api/playlists/by-id/{id} -> full update by ID
         [HttpPut("by-id/{id:int}")]
         public IActionResult UpdatePlaylistById(int id, [FromBody] Playlist updatedPlaylist)
@@ -184,48 +168,5 @@ namespace MyApi.Controllers
             SavePlaylists(playlists);
             return Ok(playlist);
         }
-
-        // PUT /api/playlists/by-name/{name} -> full update by Name
-        [HttpPut("by-name/{name}")]
-        public IActionResult UpdatePlaylistByName(string name, [FromBody] Playlist updatedPlaylist)
-        {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Name == name);
-            if (playlist == null)
-                return NotFound();
-
-            playlist.Name = updatedPlaylist.Name;
-            playlist.Description = updatedPlaylist.Description;
-            playlist.Songs = updatedPlaylist.Songs;
-
-            SavePlaylists(playlists);
-            return Ok(playlist);
-        }
-        [HttpPost("{id}/songs")]
-        public IActionResult AddSongToPlaylist(int id, [FromBody] SongDto song)
-        {
-            // Use LoadPlaylists() helper instead of reading directly
-            var playlists = LoadPlaylists();
-
-            // Find the playlist
-            var playlist = playlists.FirstOrDefault(p => p.Id == id);
-            if (playlist == null)
-            {
-                return NotFound("Playlist not found");
-            }
-
-            // Add the song
-            if (playlist.Songs == null)
-            {
-                playlist.Songs = new List<SongDto>();
-            }
-            playlist.Songs.Add(song);
-
-            // Use SavePlaylists() helper instead of writing directly
-            SavePlaylists(playlists);
-
-            return Ok(playlist);
-        }
-
     }
 }
