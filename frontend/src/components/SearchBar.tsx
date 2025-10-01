@@ -1,11 +1,15 @@
-import { useState } from 'react';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import Button from 'react-bootstrap/Button';
-import { type Track, type SpotifyResponse } from './Spotify';
+import { useState } from "react";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import Button from "react-bootstrap/Button";
+import { type Track, type Song, type SpotifyResponse } from "./Spotify";
 
-export default function SearchBar() {
-  const [query, setQuery] = useState('');
+interface SearchBarProps {
+  onSongSelect: (song: Song) => void;
+}
+
+export default function SearchBar({ onSongSelect }: SearchBarProps) {
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<Track[]>([]);
 
   const handleSearch = async () => {
@@ -18,7 +22,7 @@ export default function SearchBar() {
       const data: SpotifyResponse = await response.json();
       setResults(data.tracks?.items || []);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       setResults([]);
     }
   };
@@ -30,7 +34,7 @@ export default function SearchBar() {
         <Form.Control
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           placeholder="Search for songs..."
         />
         <Button variant="success" onClick={handleSearch}>
@@ -41,12 +45,30 @@ export default function SearchBar() {
       <ul>
         {results.map((track) => (
           <li key={track.id}>
-            <strong>{track.name}</strong> by{' '}
-            {track.artists.map((a) => a.name).join(', ')} <br />
+            <strong>{track.name}</strong> by{" "}
+            {track.artists.map((a) => a.name).join(", ")} <br />
             Album: {track.album.name} <br />
-            <a href={track.external_urls.spotify} target="_blank" rel="noopener noreferrer">
+            <a
+              href={track.external_urls.spotify}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Listen on Spotify
-            </a>
+            </a>{" "}
+            <br />
+            <button
+              className="bg-green-500 text-white px-3 py-1 rounded"
+              onClick={() =>
+                onSongSelect({
+                  Title: track.name,
+                  Artist: track.artists.map((a) => a.name).join(", "),
+                  Album: track.album.name,
+                  Url: track.external_urls.spotify,
+                })
+              }
+            >
+              +
+            </button>
           </li>
         ))}
       </ul>

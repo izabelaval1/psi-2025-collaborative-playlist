@@ -15,12 +15,50 @@
     "Id": 3,
     "Name": "Chill Vibes",
     "Description": "Relax and unwind with these tracks",
-    "Songs": []
+    "Songs": [
+      {
+        "Title": "\u0415\u0432\u0430",
+        "Artist": "Vintage",
+        "Album": "Sex",
+        "Url": "https://open.spotify.com/track/5pS5TjcUKb8rWQSqgZ2MSm"
+      },
+      {
+        "Title": "Efecto",
+        "Artist": "Bad Bunny",
+        "Album": "Un Verano Sin Ti",
+        "Url": "https://open.spotify.com/track/5Eax0qFko2dh7Rl2lYs3bx"
+      }
+    ]
   },
   {
     "Id": 4,
     "Name": "Party Hits",
     "Description": "Upbeat songs to keep the party going",
-    "Songs": []
+    "Songs": [
+      {
+        "Title": "Mamma Mia",
+        "Artist": "ABBA",
+        "Album": "Abba",
+        "Url": "https://open.spotify.com/track/2TxCwUlqaOH3TIyJqGgR91"
+      },
+      {
+        "Title": "Mamma Mia",
+        "Artist": "Chico, Qatoshi",
+        "Album": "Mamma Mia",
+        "Url": "https://open.spotify.com/track/0Ahoi0BTj305R43bqQ7OE0"
+      },
+      {
+        "Title": "Mamma Maria",
+        "Artist": "Ricchi E Poveri",
+        "Album": "The Collection",
+        "Url": "https://open.spotify.com/track/7tVEeTbzEJkHP0EqUu6rmf"
+      },
+      {
+        "Title": "\u041C\u0430\u043C\u0430 \u041B\u044E\u0431\u0430",
+        "Artist": "SEREBRO",
+        "Album": "Mama Lover",
+        "Url": "https://open.spotify.com/track/2dbCVqfNnbfnS7Z8oukfXl"
+      }
+    ]
   }
 ]
