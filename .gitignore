@@ -47,3 +47,10 @@ packages/
 .DS_Store
 Thumbs.db
 
+docker/.env
+database/
+docker/volumes
+
+.env
+
+docker/backup*.sql
