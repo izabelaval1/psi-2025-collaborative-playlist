@@ -49,9 +49,9 @@ Thumbs.db
 
 docker/.env
 database/
-docker/volumes
-docker/database/
 docker/volumes/
+docker/database/
+
 
 .env
 

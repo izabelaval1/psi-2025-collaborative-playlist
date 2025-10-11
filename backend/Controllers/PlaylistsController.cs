@@ -33,27 +33,27 @@ namespace MyApi.Controllers
                 return new List<Playlist>(); // on error → return empty list
             }
         }
-        private List<SongDto> LoadSongs()
-        {
-            try
-            {
-                if (!System.IO.File.Exists(FilePath)) // if non-existing returns empty list
-                    return new List<SongDto>();
+        // private List<SongDto> LoadSongs()
+        // {
+        //     try
+        //     {
+        //         if (!System.IO.File.Exists(FilePath)) // if non-existing returns empty list
+        //             return new List<SongDto>();
 
-                var json = System.IO.File.ReadAllText(FilePath); //if existing - reads the file
+        //         var json = System.IO.File.ReadAllText(FilePath); //if existing - reads the file
 
-                var songs = JsonSerializer.Deserialize<List<SongDto>>(json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true //  mhm allow lowercase JSON keys
-                    });
-                return songs ?? new List<SongDto>(); // if null, return empty list
-            }
-            catch
-            {
-                return new List<SongDto>(); // on error → return empty list
-            }
-        }
+        //         var songs = JsonSerializer.Deserialize<List<SongDto>>(json,
+        //             new JsonSerializerOptions
+        //             {
+        //                 PropertyNameCaseInsensitive = true //  mhm allow lowercase JSON keys
+        //             });
+        //         return songs ?? new List<SongDto>(); // if null, return empty list
+        //     }
+        //     catch
+        //     {
+        //         return new List<SongDto>(); // on error → return empty list
+        //     }
+        // }
 
 
         // helper to save playlists back to the JSON file
@@ -63,22 +63,22 @@ namespace MyApi.Controllers
             Directory.CreateDirectory("Data"); // Ensure the folder exists
             System.IO.File.WriteAllText(FilePath, json); // updates list overwrites
         }
-        private void SaveSongs(List<SongDto> songs)
-        {
-            var json = JsonSerializer.Serialize(songs, new JsonSerializerOptions { WriteIndented = true }); // Serialize list → JSON
-            Directory.CreateDirectory("Data"); // Ensure the folder exists
-            System.IO.File.WriteAllText(FilePath, json); // updates list overwrites
-        }
+        // private void SaveSongs(List<SongDto> songs)
+        // {
+        //     var json = JsonSerializer.Serialize(songs, new JsonSerializerOptions { WriteIndented = true }); // Serialize list → JSON
+        //     Directory.CreateDirectory("Data"); // Ensure the folder exists
+        //     System.IO.File.WriteAllText(FilePath, json); // updates list overwrites
+        // }
         // GET /api/playlists -> return all playlists
         [HttpGet]
         public IActionResult GetPlaylists()
         {
             return Ok(LoadPlaylists());
         }
-        public IActionResult GetSongs()
-        {
-            return Ok(LoadSongs());
-        }
+        // public IActionResult GetSongs()
+        // {
+        //     return Ok(LoadSongs());
+        // }
 
         // GET /api/playlists/{id} -> return playlist by ID
         [HttpGet("{id:int}")]
@@ -163,7 +163,7 @@ namespace MyApi.Controllers
 
             playlist.Name = updatedPlaylist.Name;
             playlist.Description = updatedPlaylist.Description;
-            playlist.Songs = updatedPlaylist.Songs;
+            // playlist.Songs = updatedPlaylist.Songs;
 
             SavePlaylists(playlists);
             return Ok(playlist);
