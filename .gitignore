@@ -56,3 +56,5 @@ docker/volumes/
 .env
 
 docker/backup*.sql
+
+backend/appsettings.Development.json
