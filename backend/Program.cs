@@ -1,37 +1,42 @@
 using MyApi.Data;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
+using MyApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Add HttpClient
 builder.Services.AddHttpClient();
 
-//register ef core class ApplicationDbContext, use npgsql (postgresql) provider to connect to db and read default connection string from appsettings.Development.json
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// Read directly from appsettings.Development.json
+builder.Services.AddDbContext<PlaylistAppContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .UseSnakeCaseNamingConvention());
 
 // ✅ Add CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost5173",
-        builder =>
-        {
-            builder.WithOrigins("http://localhost:5173") // your frontend origin
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowLocalhost5173", policyBuilder =>
+    {
+        policyBuilder.WithOrigins("http://localhost:5173")
+                     .AllowAnyHeader()
+                     .AllowAnyMethod();
+    });
 });
+
+// Add controllers with JSON options to prevent circular references
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 //app.UseHttpsRedirection();
 
 app.UseRouting();
 
-// ✅ Enable CORS
 app.UseCors("AllowLocalhost5173");
 
 app.UseAuthorization();

@@ -1,172 +1,303 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
-using System.Text.Json;
+using System.Linq;
 
 namespace MyApi.Controllers
 {
-    [ApiController] //need this in controllers, it validates requests, throws error responses and other stuff 
-    [Route("api/[controller]")] // url will be api/playlist (according to the name of the controller)
+    
+    [ApiController]
+    [Route("api/[controller]")]
     public class PlaylistsController : ControllerBase
     {
 
-        private static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "playlists1.json"); //// json file location
+        private readonly PlaylistAppContext _context;
 
-        // Helper function reads all playlists from the JSON file
-        private List<Playlist> LoadPlaylists()
-        {
-            try
-            {
-                if (!System.IO.File.Exists(FilePath)) // if non-existing returns empty list
-                    return new List<Playlist>();
+    public PlaylistsController(PlaylistAppContext context)
+    {
+        _context = context; // <- injected automatically
+    }
 
-                var json = System.IO.File.ReadAllText(FilePath); //if existing - reads the file
-
-                var playlists = JsonSerializer.Deserialize<List<Playlist>>(json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true //  mhm allow lowercase JSON keys
-                    });
-                return playlists ?? new List<Playlist>(); // if null, return empty list
-            }
-            catch
-            {
-                return new List<Playlist>(); // on error → return empty list
-            }
-        }
-        // private List<SongDto> LoadSongs()
-        // {
-        //     try
-        //     {
-        //         if (!System.IO.File.Exists(FilePath)) // if non-existing returns empty list
-        //             return new List<SongDto>();
-
-        //         var json = System.IO.File.ReadAllText(FilePath); //if existing - reads the file
-
-        //         var songs = JsonSerializer.Deserialize<List<SongDto>>(json,
-        //             new JsonSerializerOptions
-        //             {
-        //                 PropertyNameCaseInsensitive = true //  mhm allow lowercase JSON keys
-        //             });
-        //         return songs ?? new List<SongDto>(); // if null, return empty list
-        //     }
-        //     catch
-        //     {
-        //         return new List<SongDto>(); // on error → return empty list
-        //     }
-        // }
-
-
-        // helper to save playlists back to the JSON file
-        private void SavePlaylists(List<Playlist> playlists)
-        {
-            var json = JsonSerializer.Serialize(playlists, new JsonSerializerOptions { WriteIndented = true }); // Serialize list → JSON
-            Directory.CreateDirectory("Data"); // Ensure the folder exists
-            System.IO.File.WriteAllText(FilePath, json); // updates list overwrites
-        }
-        // private void SaveSongs(List<SongDto> songs)
-        // {
-        //     var json = JsonSerializer.Serialize(songs, new JsonSerializerOptions { WriteIndented = true }); // Serialize list → JSON
-        //     Directory.CreateDirectory("Data"); // Ensure the folder exists
-        //     System.IO.File.WriteAllText(FilePath, json); // updates list overwrites
-        // }
         // GET /api/playlists -> return all playlists
         [HttpGet]
         public IActionResult GetPlaylists()
         {
-            return Ok(LoadPlaylists());
+            var playlists = _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.Song)
+                        .ThenInclude(s => s.Artists)
+                .Include(p => p.Users)
+                .Include(p => p.Host)
+                .AsNoTracking()
+                .Select(p => new PlaylistResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    HostId = p.HostId,
+                    Host = p.Host != null ? new UserDto
+                    {
+                        Id = p.Host.Id,
+                        Username = p.Host.Username
+                    } : null,
+                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.Duration,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    Collaborators = p.Users.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(playlists);
         }
-        // public IActionResult GetSongs()
-        // {
-        //     return Ok(LoadSongs());
-        // }
 
         // GET /api/playlists/{id} -> return playlist by ID
         [HttpGet("{id:int}")]
         public IActionResult GetPlaylistById(int id)
         {
-            var playlist = LoadPlaylists().FirstOrDefault(p => p.Id == id); // Find playlist by ID
-            if (playlist == null)
-                return NotFound(); // if not found → 404
+            var playlist = _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.Song)
+                        .ThenInclude(s => s.Artists)
+                .Include(p => p.Users)
+                .Include(p => p.Host)
+                .AsNoTracking()
+                .Where(p => p.Id == id)
+                .Select(p => new PlaylistResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    HostId = p.HostId,
+                    Host = p.Host != null ? new UserDto
+                    {
+                        Id = p.Host.Id,
+                        Username = p.Host.Username
+                    } : null,
+                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.Duration,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    Collaborators = p.Users.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username
+                    }).ToList()
+                })
+                .FirstOrDefault();
 
-            return Ok(playlist); // if found → return playlist
+            if (playlist == null)
+                return NotFound($"Playlist with ID {id} not found.");
+
+            return Ok(playlist);
         }
 
         // POST /api/playlists -> create a new playlist
         [HttpPost]
-        public IActionResult CreatePlaylist([FromBody] Playlist newPlaylist)
+        public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
-            var playlists = LoadPlaylists(); // Load current playlists
 
-            // auto new ID (+1 from last one or 1 if list empty)
-            int newId;
+            var exists = _context.Playlists.Any(p => p.Name == newPlaylist.Name);
+            if (exists)
+                return Conflict($"A playlist with the name '{newPlaylist.Name}' already exists.");
 
-            if (playlists.Count > 0)
+            var playlist = new Playlist
             {
-                var lastPlaylist = playlists[playlists.Count - 1];
-                newId = lastPlaylist.Id + 1;
-            }
-            else
-            {
-                newId = 1;
-            }
+                Name = newPlaylist.Name,
+                Description = newPlaylist.Description,
+                HostId = newPlaylist.HostId
+            };
 
-            newPlaylist.Id = newId;
+            _context.Playlists.Add(playlist);
+            _context.SaveChanges();
 
-            playlists.Add(newPlaylist); // Add to list
-            SavePlaylists(playlists); // Save back to JSON
-
-            return CreatedAtAction(nameof(GetPlaylistById), new { id = newPlaylist.Id }, newPlaylist); // Return 201 Created
+            return CreatedAtAction(nameof(GetPlaylistById), new { id = playlist.Id }, playlist);
         }
 
-        // PATCH /api/playlists/{id} -> partial update (only update provided fields)
-        [HttpPatch("{id:int}")]
-        public IActionResult EditPlaylist(int id, [FromBody] Playlist editedPlaylist)
+        // PUT /api/playlists/by-id/{id} -> full update by ID
+        [HttpPut("by-id/{id:int}")]
+        public IActionResult UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
         {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Id == id);
-            if (playlist == null)
+
+            var existing = _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                .FirstOrDefault(p => p.Id == id);
+
+            if (existing == null)
                 return NotFound();
 
-            // Only update provided fields
+            existing.Name = updatedPlaylist.Name;
+            existing.Description = updatedPlaylist.Description;
+
+            // Update PlaylistSongs
+            if (updatedPlaylist.SongIds != null)
+            {
+                // Remove existing playlist songs
+                var existingSongs = existing.PlaylistSongs.ToList();
+                foreach (var ps in existingSongs)
+                {
+                    _context.PlaylistSongs.Remove(ps);
+                }
+
+                // Add new playlist songs
+                var position = 1;
+                foreach (var songId in updatedPlaylist.SongIds)
+                {
+                    var dbSong = _context.Songs.FirstOrDefault(s => s.Id == songId);
+                    if (dbSong != null)
+                    {
+                        _context.PlaylistSongs.Add(new PlaylistSong
+                        {
+                            PlaylistId = existing.Id,
+                            SongId = dbSong.Id,
+                            Position = position++
+                        });
+                    }
+                }
+            }
+
+            _context.SaveChanges();
+
+            // Return updated playlist
+            var updated = _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.Song)
+                        .ThenInclude(s => s.Artists)
+                .Include(p => p.Users)
+                .Include(p => p.Host)
+                .AsNoTracking()
+                .Where(p => p.Id == id)
+                .Select(p => new PlaylistResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    HostId = p.HostId,
+                    Host = p.Host != null ? new UserDto
+                    {
+                        Id = p.Host.Id,
+                        Username = p.Host.Username
+                    } : null,
+                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.Duration,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    Collaborators = p.Users.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username
+                    }).ToList()
+                })
+                .FirstOrDefault();
+
+            return Ok(updated);
+        }
+
+        // PATCH /api/playlists/{id} -> partial update
+        [HttpPatch("{id:int}")]
+        public IActionResult EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
+        {
+
+            var existing = _context.Playlists.FirstOrDefault(p => p.Id == id);
+            if (existing == null)
+                return NotFound();
+
             if (!string.IsNullOrEmpty(editedPlaylist.Name))
-                playlist.Name = editedPlaylist.Name;
+                existing.Name = editedPlaylist.Name;
 
-            if (!string.IsNullOrEmpty(editedPlaylist.Description))
-                playlist.Description = editedPlaylist.Description;
+            if (editedPlaylist.Description != null)
+                existing.Description = editedPlaylist.Description;
 
-            SavePlaylists(playlists);
-            return Ok(playlist);
+            _context.SaveChanges();
+
+            // Return updated playlist
+            var updated = _context.Playlists
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.Song)
+                        .ThenInclude(s => s.Artists)
+                .Include(p => p.Users)
+                .Include(p => p.Host)
+                .AsNoTracking()
+                .Where(p => p.Id == id)
+                .Select(p => new PlaylistResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    HostId = p.HostId,
+                    Host = p.Host != null ? new UserDto
+                    {
+                        Id = p.Host.Id,
+                        Username = p.Host.Username
+                    } : null,
+                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.Duration,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    Collaborators = p.Users.Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username
+                    }).ToList()
+                })
+                .FirstOrDefault();
+
+            return Ok(updated);
         }
 
         // DELETE /api/playlists/{id} -> delete playlist by ID
         [HttpDelete("{id:int}")]
         public IActionResult DeletePlaylistById(int id)
         {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Id == id);
+
+            var playlist = _context.Playlists.FirstOrDefault(p => p.Id == id);
             if (playlist == null)
                 return NotFound();
 
-            playlists.Remove(playlist);
-            SavePlaylists(playlists);
+            _context.Playlists.Remove(playlist);
+            _context.SaveChanges();
 
-            return NoContent(); // 204
-        }
-        // PUT /api/playlists/by-id/{id} -> full update by ID
-        [HttpPut("by-id/{id:int}")]
-        public IActionResult UpdatePlaylistById(int id, [FromBody] Playlist updatedPlaylist)
-        {
-            var playlists = LoadPlaylists();
-            var playlist = playlists.FirstOrDefault(p => p.Id == id);
-            if (playlist == null)
-                return NotFound();
-
-            playlist.Name = updatedPlaylist.Name;
-            playlist.Description = updatedPlaylist.Description;
-            // playlist.Songs = updatedPlaylist.Songs;
-
-            SavePlaylists(playlists);
-            return Ok(playlist);
+            return NoContent();
         }
     }
 }
