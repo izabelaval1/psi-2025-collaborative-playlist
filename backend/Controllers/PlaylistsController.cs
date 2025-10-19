@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
+using MyApi.Dtos;
 using System.Linq;
 
 namespace MyApi.Controllers
@@ -15,7 +16,7 @@ namespace MyApi.Controllers
 
     public PlaylistsController(PlaylistAppContext context)
     {
-        _context = context; // <- injected automatically
+        _context = context;
     }
 
         // GET /api/playlists -> return all playlists

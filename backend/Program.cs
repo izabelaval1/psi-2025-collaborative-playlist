@@ -1,18 +1,17 @@
-using MyApi.Data;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); // 🚀✨
 
-// Add HttpClient
+// Add HttpClient 🌐
 builder.Services.AddHttpClient();
 
-// Read directly from appsettings.Development.json
+// Read directly from appsettings.Development.json 📖🔧
 builder.Services.AddDbContext<PlaylistAppContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseSnakeCaseNamingConvention());
 
-// ✅ Add CORS policy
+// ✅ Add CORS policy 🌍🔓
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost5173", policyBuilder =>
@@ -23,7 +22,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add controllers with JSON options to prevent circular references
+// Add controllers with JSON options to prevent circular references 🔄🛡️
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -33,7 +32,7 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-//app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // ❌🔒
 
 app.UseRouting();
 

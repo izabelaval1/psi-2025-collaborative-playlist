@@ -1,83 +1,61 @@
-import { useState } from 'react'
-import './styles/App.css'
-import PlaylistList from './components/PlaylistList'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import { Button } from 'react-bootstrap'
-
-import AddPlaylistPopup from "./components/AddPlaylistPopup"
-import SearchSongModal from './components/SearchSongModal'
-import PlaylistModal from './components/PlaylistModal'
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./index.css"; // Tailwind
+import "./styles/global.css"; // <-- this must come last
+import "./styles/App.css";
+import PlaylistList from "./components/PlaylistList";
+import PlaylistDisplay from "./components/PlaylistDisplay";
+import SongSearch from "./components/SongSearch";
+import type { PlaylistResponseDto } from "./types/PlaylistResponseDto.ts";
+import PlaylistModal from "./components/PlaylistModal";
 
 function App() {
-  const [isAddOpen, setAddOpen] = useState(false)     // for AddPlaylistPopup
-  const [isSearchOpen, setSearchOpen] = useState(false) // for SearchSongModal
-  const [showModal, setShowModal] = useState(false); //for creating playlist modal
+  const [selectedPlaylist, setSelectedPlaylist] =
+    useState<PlaylistResponseDto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSongAdded = () => {
+    // Refresh the selected playlist after adding a song
+    if (selectedPlaylist) {
+      fetch(`http://localhost:5000/api/playlists/by-id/${selectedPlaylist.id}`)
+        .then((res) => res.json())
+        .then((data) => setSelectedPlaylist(data))
+        .catch((error) =>
+          console.error("Failed to refresh playlist:", error)
+        );
+    }
+  };
 
   return (
-    <div className="main-page">
-      <aside className='left-side'>
-        <PlaylistList />
+    <div className="main-page flex h-screen bg-neutral-950 text-white">
+      {/* Left sidebar */}
+      <aside className="left-side w-48 p-4 border-r border-neutral-800">
+        <button
+          className="mb-4 w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold"
+          onClick={() => setIsModalOpen(true)}
+        >
+          + New Playlist
+        </button>
+        <PlaylistList onSelect={setSelectedPlaylist} />
       </aside>
 
-      <div className="vDivider"></div>
+      {/* Divider */}
+      <div className="vDivider w-px bg-neutral-800"></div>
 
-      <div className='right-side'>
-        <input type="text" name="search-bar" id="search-bar" placeholder='Mock search bar'/>
-        <div className='home-page-btns'>
-          {/* First button + its popup */}
-          <div className='buttons-up'>
-            <div className="popup-btn">
-              <AddPlaylistPopup.Button onClick={() => setAddOpen(true)} />
-              {isAddOpen && <AddPlaylistPopup.Popup onClose={() => setAddOpen(false)} />}
-            </div>
-            {/* Second button + its modal */}
-            <div>
-              <Button variant="primary" onClick={() => setSearchOpen(true)}>
-                Add a song
-              </Button>
-              <SearchSongModal
-                show={isSearchOpen}
-                onHide={() => setSearchOpen(false)}
-              />
-            </div>
-          </div>
-          <div className='buttons-down'>
-            <button className="add-playlist-btn" onClick={() => setShowModal(true)}>+ New Playlist</button>
-            {showModal && <PlaylistModal close={() => setShowModal(false)} />}
-          </div>
+      {/* Middle / Right Section */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <SongSearch onSongAdded={handleSongAdded} />
 
+        {/* The playlist display */}
+        <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
+          <PlaylistDisplay playlist={selectedPlaylist} />
         </div>
       </div>
 
-      
+      {/* Playlist Modal */}
+      {isModalOpen && <PlaylistModal close={() => setIsModalOpen(false)} />}
     </div>
-  )
+  );
 }
 
-export default App
-
-
-
-// function MyButton({ onClick }: { onClick: () => void }) {
-//   return (
-//     <button 
-//       onClick={onClick}
-//       className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
-//     >
-//       +
-//     </button>
-//   );
-// }
-
-// function MyPopup({ onClose }: { onClose: () => void }) {
-//   return (
-//     <div className="popup-overlay">
-//       <div className="popup-content">
-//         <h2>Popup content</h2>
-//         <button onClick={onClose}>
-//           Close
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
+export default App;
