@@ -1,24 +1,42 @@
 import { useState } from "react";
-import type { Playlist } from "../types/Playlist.ts";
+import type { Playlist } from "../types/Playlist";
 
-export default function CreatePlaylistForm() {
+interface CreatePlaylistFormProps {
+  onPlaylistCreated: (newPlaylist: Playlist) => void;
+}
 
+export default function CreatePlaylistForm({ onPlaylistCreated }: CreatePlaylistFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
 
-   // runs when the Create button is clicked
-  const createPlaylist = () => {
-    fetch("http://localhost:5000/api/playlists", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description, songs: [] })
-    })
-      .then(res => res.json())
-      .then((newPlaylist: Playlist) => {
-    // tell parent to add it to the list
-        setName(""); // clear inputs
-        setDescription("");
+  // Runs when the Create button is clicked
+  const createPlaylist = async () => {
+    if (!name.trim()) return alert("Please enter a playlist name.");
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/playlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, songs: [] }),
       });
+
+      if (!res.ok) throw new Error("Failed to create playlist");
+      const newPlaylist: Playlist = await res.json();
+
+      // ✅ Inform parent so it can refresh list
+      onPlaylistCreated(newPlaylist);
+
+      // Clear inputs
+      setName("");
+      setDescription("");
+    } catch (err) {
+      console.error("Error creating playlist:", err);
+      alert("Failed to create playlist.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,14 +45,18 @@ export default function CreatePlaylistForm() {
       <input
         placeholder="Playlist name"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
+        disabled={loading}
       />
       <input
         placeholder="Description"
         value={description}
-        onChange={e => setDescription(e.target.value)}
+        onChange={(e) => setDescription(e.target.value)}
+        disabled={loading}
       />
-      <button onClick={createPlaylist}>Create</button>
+      <button onClick={createPlaylist} disabled={loading}>
+        {loading ? "Creating..." : "Create"}
+      </button>
     </div>
   );
 }

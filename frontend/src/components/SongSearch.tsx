@@ -1,24 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Track, SpotifyResponse } from "./Spotify";
+import type { Playlist } from "../types/Playlist";
 
 interface SongSearchProps {
   onSongAdded?: () => void;
+  playlists: Playlist[];
 }
 
-export default function SongSearch({ onSongAdded }: SongSearchProps) {
-  const [playlists, setPlaylists] = useState<any[]>([]);
+export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) {
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    fetch("http://localhost:5000/api/playlists")
-      .then((res) => res.json())
-      .then((data) => setPlaylists(data))
-      .catch((error) => console.error("Failed to load playlists:", error));
-  }, []);
 
   const handleSearch = async () => {
     if (!query.trim()) {
@@ -65,15 +59,24 @@ export default function SongSearch({ onSongAdded }: SongSearchProps) {
         body: JSON.stringify(songData),
       });
 
-      if (!response.ok) throw new Error("Failed to add song");
+      if (response.status === 409) {
+        alert("This song is already in the playlist!");
+        return;
+      }
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to add song: ${errorText}`);
+      }
+
+      alert("Song added successfully!");
       setQuery("");
       setResults([]);
       setIsSearching(false);
       onSongAdded?.();
     } catch (error) {
       console.error("Failed to add song:", error);
-      alert("Failed to add song");
+      alert(`Failed to add song: ${error}`);
     }
   };
 

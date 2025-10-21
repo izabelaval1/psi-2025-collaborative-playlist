@@ -1,29 +1,37 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./index.css"; // Tailwind
-import "./styles/global.css"; // <-- this must come last
+import "./index.css";
+import "./styles/global.css";
 import "./styles/App.css";
-import PlaylistList from "./components/PlaylistList";
+
+import PlaylistList, { type PlaylistListHandle } from "./components/PlaylistList";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import SongSearch from "./components/SongSearch";
-import type { PlaylistResponseDto } from "./types/PlaylistResponseDto.ts";
 import PlaylistModal from "./components/PlaylistModal";
+import type { PlaylistResponseDto } from "./types/PlaylistResponseDto";
+import type { Playlist } from "./types/Playlist";
 
 function App() {
   const [selectedPlaylist, setSelectedPlaylist] =
     useState<PlaylistResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+
+  const playlistListRef = useRef<PlaylistListHandle>(null);
 
   const handleSongAdded = () => {
-    // Refresh the selected playlist after adding a song
     if (selectedPlaylist) {
-      fetch(`http://localhost:5000/api/playlists/by-id/${selectedPlaylist.id}`)
+      fetch(`http://localhost:5000/api/playlists/${selectedPlaylist.id}`)
         .then((res) => res.json())
         .then((data) => setSelectedPlaylist(data))
         .catch((error) =>
           console.error("Failed to refresh playlist:", error)
         );
     }
+  };
+
+  const handlePlaylistsLoaded = (loadedPlaylists: Playlist[]) => {
+    setPlaylists(loadedPlaylists);
   };
 
   return (
@@ -36,7 +44,12 @@ function App() {
         >
           + New Playlist
         </button>
-        <PlaylistList onSelect={setSelectedPlaylist} />
+
+        <PlaylistList 
+          ref={playlistListRef} 
+          onSelect={setSelectedPlaylist}
+          onPlaylistsLoaded={handlePlaylistsLoaded}
+        />
       </aside>
 
       {/* Divider */}
@@ -44,7 +57,10 @@ function App() {
 
       {/* Middle / Right Section */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <SongSearch onSongAdded={handleSongAdded} />
+        <SongSearch 
+          onSongAdded={handleSongAdded}
+          playlists={playlists}
+        />
 
         {/* The playlist display */}
         <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
@@ -53,7 +69,15 @@ function App() {
       </div>
 
       {/* Playlist Modal */}
-      {isModalOpen && <PlaylistModal close={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <PlaylistModal
+          close={() => setIsModalOpen(false)}
+          onPlaylistCreated={async () => {
+            setIsModalOpen(false);
+            await playlistListRef.current?.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
