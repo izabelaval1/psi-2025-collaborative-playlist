@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
+using System.Linq;
 
 namespace MyApi.Controllers
 {
@@ -17,32 +18,35 @@ namespace MyApi.Controllers
             _context = context;
         }
 
-
         //This is a helper makes sure a Song (by Title + Album) exists in the database.
         //If it already exists return it (no duplicates)
-        // If it doesn’t thennn create it, and also ensure each Artist exists (find or create) and link them to the song, then save.
+        // If it doesn’t then create it, and also ensure each Artist exists (find or create) and link them to the song, then save.
         private Song EnsureSong(
             string title,
-            string? album = null,        // OPTIONAL (default null)
-            int? duration = null,        // OPTIONAL (default null)
-            params string[] artistNames)  // OPTIONAL 
+            string? album = null,
+            Duration? duration = null,
+            params string[] artistNames)
         {
             var existing = _context.Songs
-            .Include(s => s.Artists) // also load the song’s related Artists in the same DB query.
-            .FirstOrDefault(s => s.Title == title && s.Album == album); //returns the first matching song (by Title + Album) or null if not found.
+                .Include(s => s.Artists)
+                .FirstOrDefault(s => s.Title == title && s.Album == album);
 
-            if (existing != null) return existing; //If a matching song exists, reuse it. This avoids duplicate rows.
+            if (existing != null)
+                return existing;
 
-            var song = new Song { Title = title, Album = album, Duration = duration };
+            var song = new Song
+            {
+                Title = title,
+                Album = album,
+                DurationSeconds = duration?.Seconds
+            };
 
             foreach (var artistName in artistNames)
             {
                 var artist = _context.Artists.FirstOrDefault(a => a.Name == artistName);
-
                 if (artist == null)
-                {
                     artist = new Artist { Name = artistName };
-                }
+
                 song.Artists.Add(artist);
             }
 
@@ -51,7 +55,6 @@ namespace MyApi.Controllers
 
             return song;
         }
-
 
         // POST /api/songs/add-to-playlist -> add a song to a playlist
         [HttpPost("add-to-playlist")]
@@ -64,17 +67,23 @@ namespace MyApi.Controllers
             if (playlist == null)
                 return NotFound($"Playlist with ID {request.PlaylistId} not found.");
 
-            // Parse artists (comma-separated)
-            var artistNames = request.Artist.Split(',')
+            // artists are provided as a list in the DTO
+            var artistNames = request.ArtistNames
                 .Select(a => a.Trim())
                 .Where(a => !string.IsNullOrEmpty(a))
                 .ToList();
+
+            Duration? duration = null;
+            if (request.DurationMs.HasValue)
+            {
+                duration = Duration.FromMilliseconds(request.DurationMs.Value);
+            }
 
             // Check if song already exists (by title and album)
             var song = EnsureSong(
                 title: request.Title,
                 album: request.Album,
-                duration: null,
+                duration: duration,
                 artistNames: artistNames.ToArray());
 
             // Check if song is already in the playlist
@@ -82,8 +91,7 @@ namespace MyApi.Controllers
             if (alreadyInPlaylist)
                 return Conflict("This song is already in the playlist.");
 
-            // 
-            //ExtensionAttribute usage
+            // Extension method usage
             var nextPosition = playlist.PlaylistSongs.NextPosition();
 
             var playlistSong = new PlaylistSong
@@ -122,10 +130,20 @@ namespace MyApi.Controllers
                 Duration = s.Duration,
                 Artists = s.Artists.Select(a => new ArtistDto
                 {
-                    Id = a.Id,
-                    Name = a.Name
-                }).ToList()
-            }).ToList();
+                    Id = s.Id,
+                    Title = s.Title,
+                    Album = s.Album,
+                    // map to the DTO's DurationFormatted string (not a non-existent Duration property)
+                    DurationFormatted = s.DurationSeconds.HasValue
+                        ? new Duration(s.DurationSeconds.Value).ToString()
+                        : null,
+                    Artists = s.Artists.Select(a => new ArtistDto
+                    {
+                        Id = a.Id,
+                        Name = a.Name
+                    }).ToList()
+                })
+                .ToList();
 
             return Ok(songs);
         }
@@ -143,7 +161,9 @@ namespace MyApi.Controllers
                     Id = s.Id,
                     Title = s.Title,
                     Album = s.Album,
-                    Duration = s.Duration,
+                    DurationFormatted = s.DurationSeconds.HasValue
+                        ? new Duration(s.DurationSeconds.Value).ToString()
+                        : null,
                     Artists = s.Artists.Select(a => new ArtistDto
                     {
                         Id = a.Id,

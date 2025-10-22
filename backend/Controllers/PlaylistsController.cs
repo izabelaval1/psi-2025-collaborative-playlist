@@ -29,7 +29,6 @@ namespace MyApi.Controllers
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
-                .AsEnumerable() 
                 .Select(p => new PlaylistResponseDto
                 {
                     Id = p.Id,
@@ -39,29 +38,27 @@ namespace MyApi.Controllers
                     Host = p.Host != null ? new UserDto
                     {
                         Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
+                        Username = p.Host.Username
                     } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderedByPosition()
-                        .Select(ps => new SongDto
+                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        DurationFormatted = ps.Song.DurationSeconds.HasValue
+                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                            : null,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
                         {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
                     Collaborators = p.Users.Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
+                        Username = u.Username
                     }).ToList()
                 })
                 .ToList();
@@ -100,7 +97,9 @@ namespace MyApi.Controllers
                             Id = ps.Song.Id,
                             Title = ps.Song.Title,
                             Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
+                            DurationFormatted = ps.Song.DurationSeconds.HasValue
+                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                                : null,
                             Position = ps.Position,
                             Artists = ps.Song.Artists.Select(a => new ArtistDto
                             {
@@ -228,7 +227,9 @@ namespace MyApi.Controllers
                             Id = ps.Song.Id,
                             Title = ps.Song.Title,
                             Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
+                            DurationFormatted = ps.Song.DurationSeconds.HasValue
+                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                                : null,
                             Position = ps.Position,
                             Artists = ps.Song.Artists.Select(a => new ArtistDto
                             {
@@ -299,7 +300,9 @@ namespace MyApi.Controllers
                             Id = ps.Song.Id,
                             Title = ps.Song.Title,
                             Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
+                            DurationFormatted = ps.Song.DurationSeconds.HasValue
+                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                                : null,
                             Position = ps.Position,
                             Artists = ps.Song.Artists.Select(a => new ArtistDto
                             {
