@@ -14,4 +14,6 @@ public partial class User
 
     // Playlists the user collaborates on
     public virtual ICollection<Playlist> CollaboratingPlaylists { get; set; } = new List<Playlist>();
+
+    public UserRole Role { get; set; } = UserRole.Guest; // default role
 }

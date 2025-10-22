@@ -1,8 +1,12 @@
+using MyApi.Models;
+
 namespace MyApi.Dtos
 {
-    public class UserDto
+    public record UserDto
     {
         public int Id { get; set; }
         public string Username { get; set; } = null!;
+
+        public UserRole Role { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 namespace MyApi.Dtos
 {
 
-        public class PlaylistUpdateDto
+        public record PlaylistUpdateDto
     {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }

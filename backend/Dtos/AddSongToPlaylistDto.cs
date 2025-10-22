@@ -1,6 +1,6 @@
 namespace MyApi.Dtos
 {
-    public class AddSongToPlaylistDto
+    public record AddSongToPlaylistDto
     {
         public int PlaylistId { get; set; }
         public string Title { get; set; } = null!;

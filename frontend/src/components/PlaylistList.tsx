@@ -51,33 +51,43 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
         const res = await fetch(`http://localhost:5000/api/playlists/${id}`, {
           method: "DELETE",
         });
-        if (!res.ok) throw new Error("Delete failed");
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Delete failed");
+        }
+        
         const newPlaylists = playlists.filter((p) => p.id !== id);
         setPlaylists(newPlaylists);
         onPlaylistsLoaded?.(newPlaylists);
       } catch (err) {
         console.error("Error deleting playlist:", err);
+        alert(err instanceof Error ? err.message : "Failed to delete playlist.");
       }
     };
 
     const saveEdit = async (playlistId: number) => {
       try {
+        const currentPlaylist = playlists.find((p) => p.id === playlistId);
+        
+        // Use PATCH for partial update (name and description only)
         const res = await fetch(
           `http://localhost:5000/api/playlists/${playlistId}`,
           {
-            method: "PUT",
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              id: playlistId,
               name: editName,
               description: editDescription,
-              songs:
-                playlists.find((p) => p.id === playlistId)?.songs || [],
             }),
           }
         );
 
-        if (!res.ok) throw new Error("Failed to save edit");
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || "Failed to save edit");
+        }
+        
         const updatedPlaylist = await res.json();
 
         const newPlaylists = playlists.map((p) =>
@@ -89,7 +99,7 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
         setEditingId(null);
       } catch (err) {
         console.error("Error updating playlist:", err);
-        alert("Failed to update playlist.");
+        alert(err instanceof Error ? err.message : "Failed to update playlist.");
       }
     };
 
@@ -113,17 +123,29 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Playlist name"
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <input
                   value={editDescription}
-                  onChange={(e) =>
-                    setEditDescription(e.target.value)
-                  }
+                  onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Description"
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <div className="playlist-buttons">
-                  <button onClick={() => saveEdit(playlist.id)}>Save</button>
-                  <button onClick={() => setEditingId(null)}>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      saveEdit(playlist.id);
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(null);
+                    }}
+                  >
                     Cancel
                   </button>
                 </div>

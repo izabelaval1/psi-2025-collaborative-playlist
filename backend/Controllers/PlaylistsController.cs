@@ -7,18 +7,16 @@ using MyApi.Utils;
 
 namespace MyApi.Controllers
 {
-    
     [ApiController]
     [Route("api/[controller]")]
     public class PlaylistsController : ControllerBase
     {
-
         private readonly PlaylistAppContext _context;
 
-    public PlaylistsController(PlaylistAppContext context)
-    {
-        _context = context;
-    }
+        public PlaylistsController(PlaylistAppContext context)
+        {
+            _context = context;
+        }
 
         // GET /api/playlists -> return all playlists
         [HttpGet]
@@ -41,27 +39,29 @@ namespace MyApi.Controllers
                     Host = p.Host != null ? new UserDto
                     {
                         Id = p.Host.Id,
-                        Username = p.Host.Username
+                        Username = p.Host.Username,
+                        Role = p.Host.Role
                     } : null,
                     Songs = p.PlaylistSongs
-                    .OrderedByPosition() //extension 
-                    .Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        Duration = ps.Song.Duration,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        .OrderedByPosition()
+                        .Select(ps => new SongDto
                         {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+                            Id = ps.Song.Id,
+                            Title = ps.Song.Title,
+                            Album = ps.Song.Album,
+                            Duration = ps.Song.Duration,
+                            Position = ps.Position,
+                            Artists = ps.Song.Artists.Select(a => new ArtistDto
+                            {
+                                Id = a.Id,
+                                Name = a.Name
+                            }).ToList()
+                        }).ToList(),
                     Collaborators = p.Users.Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username
+                        Username = u.Username,
+                        Role = u.Role
                     }).ToList()
                 })
                 .ToList();
@@ -90,25 +90,29 @@ namespace MyApi.Controllers
                     Host = p.Host != null ? new UserDto
                     {
                         Id = p.Host.Id,
-                        Username = p.Host.Username
+                        Username = p.Host.Username,
+                        Role = p.Host.Role
                     } : null,
-                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        Duration = ps.Song.Duration,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                    Songs = p.PlaylistSongs
+                        .OrderBy(ps => ps.Position)
+                        .Select(ps => new SongDto
                         {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+                            Id = ps.Song.Id,
+                            Title = ps.Song.Title,
+                            Album = ps.Song.Album,
+                            Duration = ps.Song.Duration,
+                            Position = ps.Position,
+                            Artists = ps.Song.Artists.Select(a => new ArtistDto
+                            {
+                                Id = a.Id,
+                                Name = a.Name
+                            }).ToList()
+                        }).ToList(),
                     Collaborators = p.Users.Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username
+                        Username = u.Username,
+                        Role = u.Role
                     }).ToList()
                 })
                 .FirstOrDefault();
@@ -123,10 +127,17 @@ namespace MyApi.Controllers
         [HttpPost]
         public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
-
             var exists = _context.Playlists.Any(p => p.Name == newPlaylist.Name);
             if (exists)
                 return Conflict($"A playlist with the name '{newPlaylist.Name}' already exists.");
+
+            // Check if host exists and has proper role
+            var host = _context.Users.FirstOrDefault(u => u.Id == newPlaylist.HostId);
+            if (host == null)
+                return NotFound($"Host with ID {newPlaylist.HostId} not found.");
+
+            if (host.Role != UserRole.Host && host.Role != UserRole.Admin)
+                return StatusCode(403, $"User with ID {newPlaylist.HostId} is not authorized to host playlists.");
 
             var playlist = new Playlist
             {
@@ -145,13 +156,17 @@ namespace MyApi.Controllers
         [HttpPut("by-id/{id:int}")]
         public IActionResult UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
         {
-
             var existing = _context.Playlists
                 .Include(p => p.PlaylistSongs)
+                .Include(p => p.Host)
                 .FirstOrDefault(p => p.Id == id);
 
             if (existing == null)
                 return NotFound();
+
+            // Authorization check
+            if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
+                return StatusCode(403, "Only hosts or admins can update playlists.");
 
             existing.Name = updatedPlaylist.Name;
             existing.Description = updatedPlaylist.Description;
@@ -203,25 +218,29 @@ namespace MyApi.Controllers
                     Host = p.Host != null ? new UserDto
                     {
                         Id = p.Host.Id,
-                        Username = p.Host.Username
+                        Username = p.Host.Username,
+                        Role = p.Host.Role
                     } : null,
-                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        Duration = ps.Song.Duration,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                    Songs = p.PlaylistSongs
+                        .OrderBy(ps => ps.Position)
+                        .Select(ps => new SongDto
                         {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+                            Id = ps.Song.Id,
+                            Title = ps.Song.Title,
+                            Album = ps.Song.Album,
+                            Duration = ps.Song.Duration,
+                            Position = ps.Position,
+                            Artists = ps.Song.Artists.Select(a => new ArtistDto
+                            {
+                                Id = a.Id,
+                                Name = a.Name
+                            }).ToList()
+                        }).ToList(),
                     Collaborators = p.Users.Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username
+                        Username = u.Username,
+                        Role = u.Role
                     }).ToList()
                 })
                 .FirstOrDefault();
@@ -233,10 +252,16 @@ namespace MyApi.Controllers
         [HttpPatch("{id:int}")]
         public IActionResult EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
         {
+            var existing = _context.Playlists
+                .Include(p => p.Host)
+                .FirstOrDefault(p => p.Id == id);
 
-            var existing = _context.Playlists.FirstOrDefault(p => p.Id == id);
             if (existing == null)
                 return NotFound();
+
+            // Authorization check
+            if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
+                return StatusCode(403, "Only hosts or admins can edit playlists.");
 
             if (!string.IsNullOrEmpty(editedPlaylist.Name))
                 existing.Name = editedPlaylist.Name;
@@ -264,25 +289,29 @@ namespace MyApi.Controllers
                     Host = p.Host != null ? new UserDto
                     {
                         Id = p.Host.Id,
-                        Username = p.Host.Username
+                        Username = p.Host.Username,
+                        Role = p.Host.Role
                     } : null,
-                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        Duration = ps.Song.Duration,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                    Songs = p.PlaylistSongs
+                        .OrderBy(ps => ps.Position)
+                        .Select(ps => new SongDto
                         {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+                            Id = ps.Song.Id,
+                            Title = ps.Song.Title,
+                            Album = ps.Song.Album,
+                            Duration = ps.Song.Duration,
+                            Position = ps.Position,
+                            Artists = ps.Song.Artists.Select(a => new ArtistDto
+                            {
+                                Id = a.Id,
+                                Name = a.Name
+                            }).ToList()
+                        }).ToList(),
                     Collaborators = p.Users.Select(u => new UserDto
                     {
                         Id = u.Id,
-                        Username = u.Username
+                        Username = u.Username,
+                        Role = u.Role
                     }).ToList()
                 })
                 .FirstOrDefault();
@@ -294,10 +323,16 @@ namespace MyApi.Controllers
         [HttpDelete("{id:int}")]
         public IActionResult DeletePlaylistById(int id)
         {
+            var playlist = _context.Playlists
+                .Include(p => p.Host)
+                .FirstOrDefault(p => p.Id == id);
 
-            var playlist = _context.Playlists.FirstOrDefault(p => p.Id == id);
             if (playlist == null)
                 return NotFound();
+
+            // Authorization check
+            if (playlist.Host != null && playlist.Host.Role != UserRole.Host && playlist.Host.Role != UserRole.Admin)
+                return StatusCode(403, "Only hosts or admins can delete playlists.");
 
             _context.Playlists.Remove(playlist);
             _context.SaveChanges();
