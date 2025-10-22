@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using MyApi.Dtos;
-using System.Linq;
+using MyApi.Utils;
 
 namespace MyApi.Controllers
 {
@@ -16,6 +16,42 @@ namespace MyApi.Controllers
         {
             _context = context;
         }
+
+
+        //This is a helper makes sure a Song (by Title + Album) exists in the database.
+        //If it already exists return it (no duplicates)
+        // If it doesn’t thennn create it, and also ensure each Artist exists (find or create) and link them to the song, then save.
+        private Song EnsureSong(
+            string title,
+            string? album = null,        // OPTIONAL (default null)
+            int? duration = null,        // OPTIONAL (default null)
+            params string[] artistNames)  // OPTIONAL 
+        {
+            var existing = _context.Songs
+            .Include(s => s.Artists) // also load the song’s related Artists in the same DB query.
+            .FirstOrDefault(s => s.Title == title && s.Album == album); //returns the first matching song (by Title + Album) or null if not found.
+
+            if (existing != null) return existing; //If a matching song exists, reuse it. This avoids duplicate rows.
+
+            var song = new Song { Title = title, Album = album, Duration = duration };
+
+            foreach (var artistName in artistNames)
+            {
+                var artist = _context.Artists.FirstOrDefault(a => a.Name == artistName);
+
+                if (artist == null)
+                {
+                    artist = new Artist { Name = artistName };
+                }
+                song.Artists.Add(artist);
+            }
+
+            _context.Songs.Add(song);
+            _context.SaveChanges();
+
+            return song;
+        }
+
 
         // POST /api/songs/add-to-playlist -> add a song to a playlist
         [HttpPost("add-to-playlist")]
@@ -35,57 +71,26 @@ namespace MyApi.Controllers
                 .ToList();
 
             // Check if song already exists (by title and album)
-            var existingSong = _context.Songs
-                .Include(s => s.Artists)
-                .FirstOrDefault(s => s.Title == request.Title && s.Album == request.Album);
-
-            Song song;
-            if (existingSong != null)
-            {
-                song = existingSong;
-            }
-            else
-            {
-                // Create new song
-                song = new Song
-                {
-                    Title = request.Title,
-                    Album = request.Album,
-                    Duration = null,
-                    Artists = new List<Artist>()
-                };
-
-                // Add or find artists
-                foreach (var artistName in artistNames)
-                {
-                    var artist = _context.Artists.FirstOrDefault(a => a.Name == artistName);
-                    if (artist == null)
-                    {
-                        artist = new Artist { Name = artistName };
-                        _context.Artists.Add(artist);
-                    }
-                    song.Artists.Add(artist);
-                }
-
-                _context.Songs.Add(song);
-                _context.SaveChanges();
-            }
+            var song = EnsureSong(
+                title: request.Title,
+                album: request.Album,
+                duration: null,
+                artistNames: artistNames.ToArray());
 
             // Check if song is already in the playlist
             var alreadyInPlaylist = playlist.PlaylistSongs.Any(ps => ps.SongId == song.Id);
             if (alreadyInPlaylist)
                 return Conflict("This song is already in the playlist.");
 
-            // Add song to playlist
-            var maxPosition = playlist.PlaylistSongs.Any() 
-                ? playlist.PlaylistSongs.Max(ps => ps.Position) 
-                : 0;
+            // 
+            //ExtensionAttribute usage
+            var nextPosition = playlist.PlaylistSongs.NextPosition();
 
             var playlistSong = new PlaylistSong
             {
                 PlaylistId = playlist.Id,
                 SongId = song.Id,
-                Position = maxPosition + 1
+                Position = nextPosition
             };
 
             _context.PlaylistSongs.Add(playlistSong);

@@ -11,15 +11,15 @@ builder.Services.AddDbContext<PlaylistAppContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseSnakeCaseNamingConvention());
 
-// ✅ Add CORS policy 🌍🔓
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost5173", policyBuilder =>
-    {
-        policyBuilder.WithOrigins("http://localhost:5173")
-                     .AllowAnyHeader()
-                     .AllowAnyMethod();
-    });
+    options.AddPolicy("ViteDev", policy =>
+        policy
+            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    );
 });
 
 // Add controllers with JSON options to prevent circular references 🔄🛡️
@@ -36,7 +36,7 @@ var app = builder.Build();
 
 app.UseRouting();
 
-app.UseCors("AllowLocalhost5173");
+app.UseCors("ViteDev");
 
 app.UseAuthorization();
 

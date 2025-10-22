@@ -37,12 +37,12 @@ namespace MyApi.Controllers
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var searchUrl = $"https://api.spotify.com/v1/search?q={Uri.EscapeDataString(query)}&type=track&limit=5";
-            var response = await _httpClient.GetAsync(searchUrl);
+            var response = await _httpClient.GetAsync(searchUrl); // Ask Spotify over the internet. The reply body is a network stream of bytes.
 
             // Step 3: Return what Spotify gave us
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
+                var json = await response.Content.ReadAsStringAsync();  //Read all bytes from that stream and convert them to a single string (JSON text).
                 return Content(json, "application/json"); // Return raw JSON
             }
             else

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using MyApi.Dtos;
 using System.Linq;
+using MyApi.Utils;
 
 namespace MyApi.Controllers
 {
@@ -30,6 +31,7 @@ namespace MyApi.Controllers
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
+                .AsEnumerable() 
                 .Select(p => new PlaylistResponseDto
                 {
                     Id = p.Id,
@@ -41,7 +43,9 @@ namespace MyApi.Controllers
                         Id = p.Host.Id,
                         Username = p.Host.Username
                     } : null,
-                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
+                    Songs = p.PlaylistSongs
+                    .OrderedByPosition() //extension 
+                    .Select(ps => new SongDto
                     {
                         Id = ps.Song.Id,
                         Title = ps.Song.Title,
