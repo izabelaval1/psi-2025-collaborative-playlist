@@ -111,10 +111,24 @@ namespace MyApi.Controllers
         [HttpGet]
         public IActionResult GetAllSongs()
         {
-            var songs = _context.Songs
-                .Include(s => s.Artists)
-                .AsNoTracking()
-                .Select(s => new SongDto
+
+            // Load songs (with artists) from DB into memory
+            var entities = _context.Songs
+            .Include(s => s.Artists)
+            .AsNoTracking()
+            .ToList();
+
+            // Sort by Title -> Album -> Duration (uses Song.CompareTo) 
+             entities.Sort();
+
+            // Convert to DTOs
+            var songs = entities.Select(s => new SongDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Album = s.Album,
+                Duration = s.Duration,
+                Artists = s.Artists.Select(a => new ArtistDto
                 {
                     Id = s.Id,
                     Title = s.Title,

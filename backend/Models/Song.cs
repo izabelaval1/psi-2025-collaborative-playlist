@@ -8,7 +8,7 @@ namespace MyApi.Models;
 public partial class Song
 {
     public int Id { get; set; }
-    public string Title { get; set; } = null!;
+    public string Title { get; set; } = default!;
     public string? Album { get; set; }
     public int? DurationSeconds { get; set; } // Keep the database column as int
 
@@ -18,6 +18,6 @@ public partial class Song
         ? new Duration(DurationSeconds.Value) 
         : null;
 
-    public virtual ICollection<Artist> Artists { get; set; } = new List<Artist>();
+    public ICollection<Artist> Artists { get; set; } = new List<Artist>();
     public virtual ICollection<PlaylistSong> PlaylistSongs { get; set; } = new List<PlaylistSong>();
 }
