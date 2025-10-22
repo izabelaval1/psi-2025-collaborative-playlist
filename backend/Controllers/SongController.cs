@@ -109,17 +109,18 @@ namespace MyApi.Controllers
 
         // GET /api/songs -> return all songs
         [HttpGet]
+        // GET /api/songs -> return all songs
+        [HttpGet]
         public IActionResult GetAllSongs()
         {
-
             // Load songs (with artists) from DB into memory
             var entities = _context.Songs
-            .Include(s => s.Artists)
-            .AsNoTracking()
-            .ToList();
+                .Include(s => s.Artists)
+                .AsNoTracking()
+                .ToList();
 
-            // Sort by Title -> Album -> Duration (uses Song.CompareTo) 
-             entities.Sort();
+            // Optional: sort if needed
+            entities.Sort();
 
             // Convert to DTOs
             var songs = entities.Select(s => new SongDto
@@ -127,23 +128,15 @@ namespace MyApi.Controllers
                 Id = s.Id,
                 Title = s.Title,
                 Album = s.Album,
-                Duration = s.Duration,
+                DurationFormatted = s.DurationSeconds.HasValue
+                    ? new Duration(s.DurationSeconds.Value).ToString()
+                    : null,
                 Artists = s.Artists.Select(a => new ArtistDto
                 {
-                    Id = s.Id,
-                    Title = s.Title,
-                    Album = s.Album,
-                    // map to the DTO's DurationFormatted string (not a non-existent Duration property)
-                    DurationFormatted = s.DurationSeconds.HasValue
-                        ? new Duration(s.DurationSeconds.Value).ToString()
-                        : null,
-                    Artists = s.Artists.Select(a => new ArtistDto
-                    {
-                        Id = a.Id,
-                        Name = a.Name
-                    }).ToList()
-                })
-                .ToList();
+                    Id = a.Id,
+                    Name = a.Name
+                }).ToList()
+            }).ToList();
 
             return Ok(songs);
         }
@@ -177,5 +170,6 @@ namespace MyApi.Controllers
 
             return Ok(song);
         }
+
     }
 }
