@@ -32,11 +32,15 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-//app.UseHttpsRedirection(); // ❌🔒
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseRouting();
 
 app.UseCors("ViteDev");
+
 
 app.UseAuthorization();
 
