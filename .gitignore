@@ -58,3 +58,6 @@ docker/database/
 docker/backup*.sql
 
 backend/appsettings.Development.json
+
+.vscode/
+.vs/

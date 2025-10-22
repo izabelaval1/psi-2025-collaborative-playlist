@@ -38,6 +38,11 @@ public partial class PlaylistAppContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.PasswordHash).HasMaxLength(255).HasColumnName("password_hash");
             entity.Property(e => e.Username).HasMaxLength(50).HasColumnName("username");
+
+            entity.Property(e => e.Role)
+            .HasColumnName("role")
+            .HasMaxLength(20)
+            .HasConversion<string>(); 
         });
 
         modelBuilder.Entity<Song>(entity =>
