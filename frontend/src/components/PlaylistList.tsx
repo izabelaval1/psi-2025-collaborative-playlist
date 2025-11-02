@@ -23,7 +23,7 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editName, setEditName] = useState("");
-    const [editDescription, setEditDescription] = useState("");
+    const [editDescription, setEditDescription] = useState<string | undefined>(undefined);
 
     const loadPlaylists = async () => {
       try {
@@ -51,12 +51,12 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
         const res = await fetch(`http://localhost:5000/api/playlists/${id}`, {
           method: "DELETE",
         });
-        
+
         if (!res.ok) {
           const errorText = await res.text();
           throw new Error(errorText || "Delete failed");
         }
-        
+
         const newPlaylists = playlists.filter((p) => p.id !== id);
         setPlaylists(newPlaylists);
         onPlaylistsLoaded?.(newPlaylists);
@@ -68,9 +68,6 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
 
     const saveEdit = async (playlistId: number) => {
       try {
-        const currentPlaylist = playlists.find((p) => p.id === playlistId);
-        
-        // Use PATCH for partial update (name and description only)
         const res = await fetch(
           `http://localhost:5000/api/playlists/${playlistId}`,
           {
@@ -87,15 +84,13 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
           const errorText = await res.text();
           throw new Error(errorText || "Failed to save edit");
         }
-        
-        const updatedPlaylist = await res.json();
 
+        const updatedPlaylist = await res.json();
         const newPlaylists = playlists.map((p) =>
           p.id === updatedPlaylist.id ? updatedPlaylist : p
         );
         setPlaylists(newPlaylists);
         onPlaylistsLoaded?.(newPlaylists);
-
         setEditingId(null);
       } catch (err) {
         console.error("Error updating playlist:", err);
@@ -104,35 +99,52 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
     };
 
     return (
-      <div className="playlist-container">
-        <h2 className="playlist-title">Playlists:</h2>
+      <div
+        className="playlist-container"
+        data-testid="playlist-list__container"
+      >
+        <h2
+          className="playlist-title"
+          data-testid="playlist-list__title"
+        >
+          Playlists:
+        </h2>
 
         {playlists.length === 0 && (
-          <p className="playlist-empty">No playlists yet — create one!</p>
+          <p
+            className="playlist-empty"
+            data-testid="playlist-list__empty"
+          >
+            No playlists yet — create one!
+          </p>
         )}
 
         {playlists.map((playlist) => (
           <div
             key={playlist.id}
             className="playlist-card hover:bg-neutral-800 p-2 rounded cursor-pointer"
+            data-testid={`playlist-list__card-${playlist.id}`}
             onClick={() => onSelect(playlist)}
           >
             {editingId === playlist.id ? (
-              <div className="edit-mode">
+              <div className="edit-mode" data-testid="playlist-list__edit-mode">
                 <input
+                  data-testid="playlist-list__edit-name"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Playlist name"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <input
+                  data-testid="playlist-list__edit-desc"
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Description"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <div className="playlist-buttons">
-                  <button 
+                  <button
+                    data-testid="playlist-list__save-btn"
                     onClick={(e) => {
                       e.stopPropagation();
                       saveEdit(playlist.id);
@@ -140,7 +152,8 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
                   >
                     Save
                   </button>
-                  <button 
+                  <button
+                    data-testid="playlist-list__cancel-btn"
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingId(null);
@@ -152,9 +165,12 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
               </div>
             ) : (
               <div className="flex justify-between items-center">
-                <div className="playlist-info">
-                  <h2 className="playlist-name">{playlist.name}</h2>
-                  <p className="playlist-desc">
+                <div
+                  className="playlist-info"
+                  data-testid="playlist-list__info"
+                >
+                  <h2 data-testid="playlist-list__name">{playlist.name}</h2>
+                  <p data-testid="playlist-list__desc">
                     {playlist.description}
                   </p>
                 </div>
@@ -164,6 +180,7 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
                     icon={faEdit}
                     className="icon text-blue-400 hover:text-blue-500"
                     title="Edit playlist"
+                    data-testid="playlist-list__edit-icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingId(playlist.id);
@@ -176,6 +193,7 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
                     icon={faTrash}
                     className="icon text-red-400 hover:text-red-500"
                     title="Delete playlist"
+                    data-testid="playlist-list__delete-icon"
                     onClick={(e) => {
                       e.stopPropagation();
                       deletePlaylist(playlist.id);
@@ -192,5 +210,4 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
 );
 
 PlaylistList.displayName = "PlaylistList";
-
 export default PlaylistList;

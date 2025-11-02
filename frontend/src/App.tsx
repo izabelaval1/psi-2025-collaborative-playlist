@@ -4,7 +4,9 @@ import "./index.css";
 import "./styles/global.css";
 import "./styles/App.css";
 
-import PlaylistList, { type PlaylistListHandle } from "./components/PlaylistList";
+import PlaylistList, {
+  type PlaylistListHandle,
+} from "./components/PlaylistList";
 import PlaylistDisplay from "./components/PlaylistDisplay";
 import SongSearch from "./components/SongSearch";
 import PlaylistModal from "./components/PlaylistModal";
@@ -16,7 +18,6 @@ function App() {
     useState<PlaylistResponseDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-
   const playlistListRef = useRef<PlaylistListHandle>(null);
 
   const handleSongAdded = () => {
@@ -24,51 +25,41 @@ function App() {
       fetch(`http://localhost:5000/api/playlists/${selectedPlaylist.id}`)
         .then((res) => res.json())
         .then((data) => setSelectedPlaylist(data))
-        .catch((error) =>
-          console.error("Failed to refresh playlist:", error)
-        );
+        .catch((err) => console.error("Failed to refresh playlist:", err));
     }
   };
 
-  const handlePlaylistsLoaded = (loadedPlaylists: Playlist[]) => {
-    setPlaylists(loadedPlaylists);
-  };
+  const handlePlaylistsLoaded = (data: Playlist[]) => setPlaylists(data);
 
   return (
     <div className="main-page flex h-screen bg-neutral-950 text-white">
-      {/* Left sidebar */}
       <aside className="left-side w-48 p-4 border-r border-neutral-800">
         <button
+          data-testid="new-playlist-btn"
           className="mb-4 w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-semibold"
           onClick={() => setIsModalOpen(true)}
         >
           + New Playlist
         </button>
 
-        <PlaylistList 
-          ref={playlistListRef} 
-          onSelect={setSelectedPlaylist}
+        <PlaylistList
+          ref={playlistListRef}
+          onSelect={(p) =>
+            setSelectedPlaylist(p as unknown as PlaylistResponseDto)
+          }
           onPlaylistsLoaded={handlePlaylistsLoaded}
         />
       </aside>
 
-      {/* Divider */}
       <div className="vDivider w-px bg-neutral-800"></div>
 
-      {/* Middle / Right Section */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <SongSearch 
-          onSongAdded={handleSongAdded}
-          playlists={playlists}
-        />
-
-        {/* The playlist display */}
+        <SongSearch onSongAdded={handleSongAdded} playlists={playlists} />
         <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
           <PlaylistDisplay playlist={selectedPlaylist} />
         </div>
       </div>
 
-      {/* Playlist Modal */}
       {isModalOpen && (
         <PlaylistModal
           close={() => setIsModalOpen(false)}

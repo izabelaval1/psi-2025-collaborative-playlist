@@ -9,6 +9,7 @@ interface PlaylistModalProps {
 export default function PlaylistModal({ close, onPlaylistCreated }: PlaylistModalProps) {
   return (
     <div
+      data-testid="playlist-modal"
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={close}
     >
@@ -17,11 +18,9 @@ export default function PlaylistModal({ close, onPlaylistCreated }: PlaylistModa
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-white text-xl font-bold mb-4">Create Playlist</h2>
-
-        {/* ✅ Pass the callback down */}
         <CreatePlaylistForm onPlaylistCreated={onPlaylistCreated} />
-
         <button
+          data-testid="close-modal"
           className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg"
           onClick={close}
         >

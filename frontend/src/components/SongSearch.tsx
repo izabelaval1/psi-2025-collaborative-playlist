@@ -7,8 +7,13 @@ interface SongSearchProps {
   playlists: Playlist[];
 }
 
-export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) {
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(null);
+export default function SongSearch({
+  onSongAdded,
+  playlists,
+}: SongSearchProps) {
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(
+    null
+  );
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -53,11 +58,14 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/songs/add-to-playlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(songData),
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/songs/add-to-playlist`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(songData),
+        }
+      );
 
       if (response.status === 409) {
         alert("This song is already in the playlist!");
@@ -86,6 +94,7 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
       <div className="flex items-center gap-2">
         {/* Playlist Dropdown */}
         <select
+          data-testid="song-search-playlist-select"
           value={selectedPlaylistId ?? ""}
           onChange={(e) => setSelectedPlaylistId(Number(e.target.value))}
           className="bg-neutral-900 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 border border-neutral-800"
@@ -94,7 +103,11 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
             -- Select playlist --
           </option>
           {playlists.map((p) => (
-            <option key={p.id} value={p.id} className="bg-neutral-900 text-white">
+            <option
+              key={p.id}
+              value={p.id}
+              className="bg-neutral-900 text-white"
+            >
               {p.name}
             </option>
           ))}
@@ -102,6 +115,7 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
 
         {/* Search Input */}
         <input
+          data-testid="song-search-input"
           type="text"
           placeholder="Search for songs..."
           className="bg-neutral-900 rounded-lg px-4 py-2 flex-1 text-white placeholder-gray-500 focus:outline-none border border-neutral-800"
@@ -111,6 +125,7 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
         />
 
         <button
+          data-testid="song-search-button"
           type="button"
           onClick={handleSearch}
           disabled={isLoading}
