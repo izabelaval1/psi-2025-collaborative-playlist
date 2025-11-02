@@ -1,8 +1,6 @@
 import React from "react";
 import type { PlaylistResponseDto } from "../types/PlaylistResponseDto.ts";
 
-
-
 interface PlaylistDisplayProps {
   playlist: PlaylistResponseDto | null;
 }
@@ -17,32 +15,54 @@ const formatDuration = (seconds?: number): string => {
 const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
   if (!playlist) {
     return (
-      <div className="flex items-center justify-center text-gray-400 text-lg bg-neutral-900 rounded-2xl p-6 h-full">
+      <div
+        className="flex items-center justify-center text-gray-400 text-lg bg-neutral-900 rounded-2xl p-6 h-full"
+        data-testid="playlist-display-empty"
+      >
         Select a playlist to view its details.
       </div>
     );
   }
 
   return (
-    <div className="bg-neutral-900 text-white p-6 rounded-2xl shadow-lg overflow-y-auto h-full">
+    <div
+      className="bg-neutral-900 text-white p-6 rounded-2xl shadow-lg overflow-y-auto h-full"
+      data-testid="playlist-display"
+    >
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center mb-8">
+      <div
+        className="flex flex-col md:flex-row items-center mb-8"
+        data-testid="playlist-display-header"
+      >
         <img
           src={`https://picsum.photos/seed/${playlist.id}/200`}
           alt={playlist.name}
           className="w-48 h-48 rounded-xl object-cover mb-4 md:mb-0 md:mr-6 shadow-md"
+          data-testid="playlist-display-image"
         />
 
-        <div className="flex flex-col">
-          <h1 className="text-3xl font-bold mb-2">{playlist.name}</h1>
-          <p className="text-gray-400 mb-4">
+        <div className="flex flex-col" data-testid="playlist-display-meta">
+          <h1
+            className="text-3xl font-bold mb-2"
+            data-testid="playlist-display-title"
+          >
+            {playlist.name}
+          </h1>
+          <p
+            className="text-gray-400 mb-4"
+            data-testid="playlist-display-description"
+          >
             {playlist.description || "No description"}
           </p>
 
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="flex flex-wrap gap-2"
+            data-testid="playlist-display-collaborators"
+          >
             {playlist.collaborators.map((user) => (
               <span
                 key={user.id}
+                data-testid={`playlist-display-collab-${user.id}`}
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                   user.id === playlist.hostId
                     ? "bg-green-500 text-black font-semibold"
@@ -58,15 +78,24 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
       </div>
 
       {/* Songs */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm border-separate border-spacing-y-2">
+      <div
+        className="overflow-x-auto"
+        data-testid="playlist-display-songs-container"
+      >
+        <table
+          className="min-w-full text-sm border-separate border-spacing-y-2"
+          data-testid="playlist-display-table"
+        >
           <thead>
-            <tr className="text-gray-400 border-b border-neutral-700">
-              <th className="text-left py-2 px-4">#</th>
-              <th className="text-left py-2 px-4">Title</th>
-              <th className="text-left py-2 px-4">Artist(s)</th>
-              <th className="text-left py-2 px-4">Album</th>
-              <th className="text-left py-2 px-4">Duration</th>
+            <tr
+              className="text-gray-400 border-b border-neutral-700"
+              data-testid="playlist-display-table-header"
+            >
+              <th>#</th>
+              <th>Title</th>
+              <th>Artist(s)</th>
+              <th>Album</th>
+              <th>Duration</th>
             </tr>
           </thead>
           <tbody>
@@ -74,14 +103,21 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
               <tr
                 key={song.id}
                 className="hover:bg-neutral-800 rounded-lg transition-colors"
+                data-testid={`playlist-display-song-${song.id}`}
               >
-                <td className="py-2 px-4 text-gray-400">{index + 1}</td>
-                <td className="py-2 px-4 font-medium">{song.title}</td>
-                <td className="py-2 px-4 text-gray-300">
+                <td data-testid={`playlist-display-song-index-${song.id}`}>
+                  {index + 1}
+                </td>
+                <td data-testid={`playlist-display-song-title-${song.id}`}>
+                  {song.title}
+                </td>
+                <td data-testid={`playlist-display-song-artists-${song.id}`}>
                   {song.artists.map((a) => a.name).join(", ")}
                 </td>
-                <td className="py-2 px-4 text-gray-400">{song.album || "—"}</td>
-                <td className="py-2 px-4 text-gray-400">
+                <td data-testid={`playlist-display-song-album-${song.id}`}>
+                  {song.album || "—"}
+                </td>
+                <td data-testid={`playlist-display-song-duration-${song.id}`}>
                   {formatDuration(song.duration)}
                 </td>
               </tr>
