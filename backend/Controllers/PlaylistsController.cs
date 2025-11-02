@@ -100,5 +100,21 @@ namespace MyApi.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{playlistId:int}/song/{songId:int}")]
+        public IActionResult RemoveSongFromPlaylist(int playlistId, int songId)
+        {
+            var playlistSong = _context.PlaylistSongs
+                .FirstOrDefault(ps => ps.PlaylistId == playlistId && ps.SongId == songId);
+
+            if (playlistSong == null)
+                return NotFound("This song is not in the playlist.");
+
+            _context.PlaylistSongs.Remove(playlistSong);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Song removed from playlist successfully" });
+        }
+
     }
 }

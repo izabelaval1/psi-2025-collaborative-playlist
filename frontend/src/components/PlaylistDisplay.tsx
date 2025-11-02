@@ -1,8 +1,10 @@
 import React from "react";
 import type { PlaylistResponseDto } from "../types/PlaylistResponseDto.ts";
+import { PlaylistService } from "../services/PlaylistService.ts";
 
 interface PlaylistDisplayProps {
   playlist: PlaylistResponseDto | null;
+  onSongRemoved?: () => void;
 }
 
 const formatDuration = (seconds?: number): string => {
@@ -12,7 +14,21 @@ const formatDuration = (seconds?: number): string => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
+const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemoved }) => {
+  const removeFromPlaylist = async (playlistId: number, songId: number) => {
+    console.log("Deleting song ID:", songId);
+    try {
+      await PlaylistService.removeFromPlaylist(playlistId, songId);
+      alert("Song deleted!");
+      
+      // Call the callback to refresh data in parent
+      if (onSongRemoved) {
+        onSongRemoved();
+      }
+    } catch (err) {
+      alert("Failed to delete song: " + err);
+    }
+  };
   if (!playlist) {
     return (
       <div
@@ -96,6 +112,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
               <th>Artist(s)</th>
               <th>Album</th>
               <th>Duration</th>
+              <th>TRASHHHH</th>
             </tr>
           </thead>
           <tbody>
@@ -119,6 +136,15 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist }) => {
                 </td>
                 <td data-testid={`playlist-display-song-duration-${song.id}`}>
                   {formatDuration(song.duration)}
+                </td>
+                <td data-testid="trash">
+                  <button
+                    onClick={() => removeFromPlaylist(playlist.id, song.id)}
+                  >
+                    🗑️
+                  </button>
+
+                  {/* how tf and where tf do i change the style */}
                 </td>
               </tr>
             ))}

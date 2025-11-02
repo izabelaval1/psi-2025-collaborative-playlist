@@ -20,7 +20,7 @@ function App() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const playlistListRef = useRef<PlaylistListHandle>(null);
 
-  const handleSongAdded = () => {
+  const handleSongListChanged = () => {
     if (selectedPlaylist) {
       fetch(`http://localhost:5000/api/playlists/${selectedPlaylist.id}`)
         .then((res) => res.json())
@@ -54,9 +54,12 @@ function App() {
       <div className="vDivider w-px bg-neutral-800"></div>
 
       <div className="flex flex-col flex-1 overflow-hidden">
-        <SongSearch onSongAdded={handleSongAdded} playlists={playlists} />
+        <SongSearch onSongAdded={handleSongListChanged} playlists={playlists} />
         <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
-          <PlaylistDisplay playlist={selectedPlaylist} />
+          <PlaylistDisplay
+            playlist={selectedPlaylist}
+            onSongRemoved={handleSongListChanged}
+          />
         </div>
       </div>
 

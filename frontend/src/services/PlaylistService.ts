@@ -3,7 +3,7 @@ import type { Playlist } from "../types/Playlist";
 
 const BASE_URL = "http://localhost:5000/api/playlists";
 
-export const playlistService = {
+export const PlaylistService = {
   async getAll(): Promise<Playlist[]> {
     const res = await fetch(BASE_URL);
     if (!res.ok) throw new Error("Failed to load playlists");
@@ -34,4 +34,9 @@ export const playlistService = {
     if (!res.ok) throw new Error(await res.text() || "Failed to create playlist");
     return res.json();
   },
+
+    async removeFromPlaylist(playlistId: number, songId: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/${playlistId}/song/${songId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await res.text() || "Failed to remove song from playlist");
+}
 };
