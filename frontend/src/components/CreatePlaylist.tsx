@@ -12,8 +12,23 @@ export default function CreatePlaylistForm({ onPlaylistCreated }: CreatePlaylist
   const [loading, setLoading] = useState(false);
 
   const createPlaylist = async () => {
-    if (!name.trim()) return alert("Please enter a playlist name.");
-    if (!hostId.trim()) return alert("Please enter a host ID.");
+    // Validacijos
+    if (!name.trim()) {
+      alert("Please enter a playlist name.");
+      return;
+    }
+    
+    if (!hostId.trim()) {
+      alert("Please enter a host ID.");
+      return;
+    }
+    
+    // Konvertuoti hostId į skaičių ir patikrinti
+    const hostIdNumber = parseInt(hostId, 10);
+    if (isNaN(hostIdNumber) || hostIdNumber <= 0) {
+      alert("Host ID must be a valid positive number.");
+      return;
+    }
     
     setLoading(true);
 
@@ -22,9 +37,9 @@ export default function CreatePlaylistForm({ onPlaylistCreated }: CreatePlaylist
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          name, 
-          description, 
-          hostId: parseInt(hostId) 
+          name: name.trim(), 
+          description: description.trim(), 
+          hostId: hostIdNumber  // Naudojame tikrą skaičių
         }),
       });
 
@@ -36,9 +51,13 @@ export default function CreatePlaylistForm({ onPlaylistCreated }: CreatePlaylist
       const newPlaylist: Playlist = await res.json();
       onPlaylistCreated(newPlaylist);
 
-      // Clear inputs
+      // Išvalyti inputus po sėkmingo sukūrimo
       setName("");
       setDescription("");
+      // hostId paliekame - dažniausiai tas pats vartotojas kuria kelis playlist'us
+      
+      alert("Playlist created successfully!");
+      
     } catch (err) {
       console.error("Error creating playlist:", err);
       alert(err instanceof Error ? err.message : "Failed to create playlist.");
@@ -65,6 +84,7 @@ export default function CreatePlaylistForm({ onPlaylistCreated }: CreatePlaylist
       <input
         placeholder="Host ID"
         type="number"
+        min="1"
         value={hostId}
         onChange={(e) => setHostId(e.target.value)}
         disabled={loading}

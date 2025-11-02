@@ -4,7 +4,7 @@ using MyApi.Services;
 namespace MyApi.Controllers
 {
     [ApiController]
-    [Route("api/spotify")] // ⚠️ Pataisyta - dabar bus /api/spotify/search/{query}
+    [Route("api/spotify")] 
     public class SpotifyController : ControllerBase
     {
         private readonly SpotifyService _spotifyService;

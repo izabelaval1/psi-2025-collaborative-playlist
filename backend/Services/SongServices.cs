@@ -53,7 +53,7 @@ namespace MyApi.Services
         // Pridėti dainą į playlist
         public (bool Success, string? Error, int? SongId) AddSongToPlaylist(AddSongToPlaylistDto request)
         {
-            // 1️⃣ Patikrinti ar playlist egzistuoja
+            //  Patikrinti ar playlist egzistuoja
             var playlist = _context.Playlists
                 .Include(p => p.PlaylistSongs)
                 .FirstOrDefault(p => p.Id == request.PlaylistId);
@@ -61,35 +61,35 @@ namespace MyApi.Services
             if (playlist == null)
                 return (false, $"Playlist with ID {request.PlaylistId} not found.", null);
 
-            // 2️⃣ Paruošti atlikėjų sąrašą
+            //  Paruošti atlikėjų sąrašą
             var artistNames = request.ArtistNames
                 .Select(a => a.Trim())
                 .Where(a => !string.IsNullOrEmpty(a))
                 .ToList();
 
-            // 3️⃣ Konvertuoti trukmę
+            //  Konvertuoti trukmę
             Duration? duration = null;
             if (request.DurationMs.HasValue)
             {
                 duration = Duration.FromMilliseconds(request.DurationMs.Value);
             }
 
-            // 4️⃣ Užtikrinti, kad daina egzistuoja (arba sukurti naują)
+            //  Užtikrinti, kad daina egzistuoja (arba sukurti naują)
             var song = EnsureSong(
                 title: request.Title,
                 album: request.Album,
                 duration: duration,
                 artistNames: artistNames.ToArray());
 
-            // 5️⃣ Patikrinti ar daina jau yra playlist'e
+            // Patikrinti ar daina jau yra playlist'e
             var alreadyInPlaylist = playlist.PlaylistSongs.Any(ps => ps.SongId == song.Id);
             if (alreadyInPlaylist)
                 return (false, "This song is already in the playlist.", null);
 
-            // 6️⃣ Gauti kitą poziciją
+            //  Gauti kitą poziciją
             var nextPosition = playlist.PlaylistSongs.NextPosition();
 
-            // 7️⃣ Pridėti dainą į playlist
+            //  Pridėti dainą į playlist
             var playlistSong = new PlaylistSong
             {
                 PlaylistId = playlist.Id,

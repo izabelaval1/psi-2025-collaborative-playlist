@@ -1,28 +1,46 @@
 using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
+using MyApi.Services; // 👈 reikalinga, kad pasiektų tavo servisus (PlaylistService, SongService, SpotifyService)
 
-var builder = WebApplication.CreateBuilder(args); // 🚀✨
+var builder = WebApplication.CreateBuilder(args); // 🚀 Programos paleidimo taškas
 
-// Add HttpClient 🌐
+// ===================================================
+//  HttpClient — naudojamas Spotify API paieškai
+// ===================================================
 builder.Services.AddHttpClient();
 
-// Read directly from appsettings.Development.json 📖🔧
+// ===================================================
+//  Duomenų bazės konfigūracija (PostgreSQL per EF Core)
+// ===================================================
 builder.Services.AddDbContext<PlaylistAppContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseSnakeCaseNamingConvention());
 
+// ===================================================
+//  Servisų registravimas (Dependency Injection)
+// ===================================================
+// Kiekvienas servisų instance bus sukurtas per užklausą (Scoped)
+builder.Services.AddScoped<PlaylistService>();
+builder.Services.AddScoped<SongService>();
+builder.Services.AddScoped<SpotifyService>();
 
+// ===================================================
+//  CORS — leidžiam frontend'ui jungtis prie API
+// ===================================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ViteDev", policy =>
         policy
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173") // tavo Vite dev serveriai
             .AllowAnyHeader()
             .AllowAnyMethod()
     );
 });
 
-// Add controllers with JSON options to prevent circular references 🔄🛡️
+// ===================================================
+// Controllers + JSON nustatymai
+// ===================================================
+// Kad nebūtų ciklinių nuorodų (pvz. Playlist -> Songs -> Playlist)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -30,8 +48,14 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+// ===================================================
+//  Sukuriam WebApplication objektą
+// ===================================================
 var app = builder.Build();
 
+// ===================================================
+//  Middleware pipeline (užklausų apdorojimo seka)
+// ===================================================
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -39,11 +63,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseCors("ViteDev");
-
+app.UseCors("ViteDev"); // leidžia frontend’ui pasiekti API
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers(); // susieja visus controllerius automatiškai
 
+// ===================================================
+// Paleidžiam programą
+// ===================================================
 app.Run();

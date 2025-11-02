@@ -5,6 +5,10 @@ using MyApi.Utils;
 
 namespace MyApi.Services
 {
+    /// <summary>
+    /// Servisas atsakingas už visą logiką, susijusią su grojarąščiais (playlists).
+    /// Controlleriai tik kviečia šiuos metodus – čia vyksta DB užklausos, validacijos ir DTO mapping.
+    /// </summary>
     public class PlaylistService
     {
         private readonly PlaylistAppContext _context;
@@ -14,9 +18,12 @@ namespace MyApi.Services
             _context = context;
         }
 
-        // Čia kelsim metodus iš controller
+        // ============================================================
+        //  GET: Gauti visus grojarąščius
+        // ============================================================
         public IEnumerable<PlaylistResponseDto> GetAllPlaylists()
         {
+            //  Pirmiausia gauname duomenis iš DB
             var playlists = _context.Playlists
                 .Include(p => p.PlaylistSongs)
                     .ThenInclude(ps => ps.Song)
@@ -24,48 +31,59 @@ namespace MyApi.Services
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
-                .AsEnumerable()
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderedByPosition()
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .ToList();
+                .ToList();  // ✅ Execute query and bring to memory
 
-            return playlists;
+            // Tada konvertuojame į DTO atmintyje
+            return playlists.Select(p => new PlaylistResponseDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                HostId = p.HostId,
+                Host = p.Host != null ? new UserDto
+                {
+                    Id = p.Host.Id,
+                    Username = p.Host.Username,
+                    Role = p.Host.Role
+                } : null,
+
+                // Dainų sąrašas su Duration konvertavimu
+                Songs = p.PlaylistSongs
+                    .OrderBy(ps => ps.Position)
+                    .Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+
+                        // Konvertuojame seconds -> Duration -> tekstas "MM:SS"
+                        DurationFormatted = ps.Song.DurationSeconds.HasValue
+                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                            : null,
+
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+
+                Collaborators = p.Users.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Role = u.Role
+                }).ToList()
+            }).ToList();
         }
 
+        // ============================================================
+        //  GET by ID: Gauti konkretų grojarąštį
+        // ============================================================
         public PlaylistResponseDto? GetPlaylistById(int id)
         {
+            // ✅ Pirmiausia gauname entitą iš DB
             var playlist = _context.Playlists
                 .Include(p => p.PlaylistSongs)
                     .ThenInclude(ps => ps.Song)
@@ -73,63 +91,65 @@ namespace MyApi.Services
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
+                .FirstOrDefault(p => p.Id == id);
 
-            return playlist;
+            if (playlist == null)
+                return null;
+
+            //  Tada konvertuojame į DTO atmintyje
+            return new PlaylistResponseDto
+            {
+                Id = playlist.Id,
+                Name = playlist.Name,
+                Description = playlist.Description,
+                HostId = playlist.HostId,
+                Host = playlist.Host != null ? new UserDto
+                {
+                    Id = playlist.Host.Id,
+                    Username = playlist.Host.Username,
+                    Role = playlist.Host.Role
+                } : null,
+                Songs = playlist.PlaylistSongs
+                    .OrderBy(ps => ps.Position)
+                    .Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        DurationFormatted = ps.Song.DurationSeconds.HasValue
+                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                            : null,
+                        Position = ps.Position,
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                Collaborators = playlist.Users.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Role = u.Role
+                }).ToList()
+            };
         }
 
-        public (bool Success, string? Error, Playlist? Created) CreatePlaylist(PlaylistCreateDto newPlaylist)
+        // ============================================================
+        //  POST: Sukurti naują grojarąštį
+        // ============================================================
+        public (bool Success, string? Error, PlaylistResponseDto? Created) CreatePlaylist(PlaylistCreateDto newPlaylist)
         {
-            // 1️⃣ Check if playlist with same name exists
-            var exists = _context.Playlists.Any(p => p.Name == newPlaylist.Name);
-            if (exists)
-                return (false, $"A playlist with the name '{newPlaylist.Name}' already exists.", null);
+            if (_context.Playlists.Any(p => p.Name == newPlaylist.Name))
+                return (false, $"A playlist named '{newPlaylist.Name}' already exists.", null);
 
-            // 2️⃣ Check if host exists
             var host = _context.Users.FirstOrDefault(u => u.Id == newPlaylist.HostId);
             if (host == null)
                 return (false, $"Host with ID {newPlaylist.HostId} not found.", null);
 
-            // 3️⃣ Role validation
             if (host.Role != UserRole.Host && host.Role != UserRole.Admin)
-                return (false, $"User with ID {newPlaylist.HostId} is not authorized to host playlists.", null);
+                return (false, "User not authorized to create playlists.", null);
 
-            // 4️⃣ Create playlist
             var playlist = new Playlist
             {
                 Name = newPlaylist.Name,
@@ -140,13 +160,16 @@ namespace MyApi.Services
             _context.Playlists.Add(playlist);
             _context.SaveChanges();
 
-            // 5️⃣ Return success + created object
-            return (true, null, playlist);
+            // Gauname sukurtą grojarąštį kaip DTO
+            var createdDto = GetPlaylistById(playlist.Id);
+            return (true, null, createdDto);
         }
 
+        // ============================================================
+        //  PUT: Pilnas grojarąščio atnaujinimas
+        // ============================================================
         public (bool Success, string? Error, PlaylistResponseDto? Updated) UpdatePlaylistById(int id, PlaylistUpdateDto updatedPlaylist)
         {
-            // 1️⃣ Find existing playlist
             var existing = _context.Playlists
                 .Include(p => p.PlaylistSongs)
                 .Include(p => p.Host)
@@ -155,23 +178,18 @@ namespace MyApi.Services
             if (existing == null)
                 return (false, $"Playlist with ID {id} not found.", null);
 
-            // 2️⃣ Authorization check
             if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
                 return (false, "Only hosts or admins can update playlists.", null);
 
-            // 3️⃣ Basic updates
             existing.Name = updatedPlaylist.Name;
             existing.Description = updatedPlaylist.Description;
 
-            // 4️⃣ If song list provided – replace songs
             if (updatedPlaylist.SongIds != null)
             {
-                // Remove existing playlist songs
                 var existingSongs = existing.PlaylistSongs.ToList();
                 foreach (var ps in existingSongs)
                     _context.PlaylistSongs.Remove(ps);
 
-                // Add new ones
                 var position = 1;
                 foreach (var songId in updatedPlaylist.SongIds)
                 {
@@ -190,58 +208,16 @@ namespace MyApi.Services
 
             _context.SaveChanges();
 
-            // 5️⃣ Reload updated playlist and map to DTO
-            var updated = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
-
+            //  Gauname atnaujintą grojarąštį kaip DTO
+            var updated = GetPlaylistById(id);
             return (true, null, updated);
         }
 
-
+        // ============================================================
+        // PATCH: Dalinis grojarąščio redagavimas
+        // ============================================================
         public (bool Success, string? Error, PlaylistResponseDto? Updated) EditPlaylist(int id, PlaylistPatchDto editedPlaylist)
         {
-            // 1️⃣ Rasti esamą playlist
             var existing = _context.Playlists
                 .Include(p => p.Host)
                 .FirstOrDefault(p => p.Id == id);
@@ -249,11 +225,9 @@ namespace MyApi.Services
             if (existing == null)
                 return (false, $"Playlist with ID {id} not found.", null);
 
-            // 2️⃣ Leidimų tikrinimas
             if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
                 return (false, "Only hosts or admins can edit playlists.", null);
 
-            // 3️⃣ Atnaujinti tik nurodytus laukus
             if (!string.IsNullOrEmpty(editedPlaylist.Name))
                 existing.Name = editedPlaylist.Name;
 
@@ -262,77 +236,30 @@ namespace MyApi.Services
 
             _context.SaveChanges();
 
-            // 4️⃣ Užkrauti naujai atnaujintą playlist kaip DTO
-            var updated = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            Duration = ps.Song.Duration,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
-
+            // ✅ Gauname atnaujintą grojarąštį kaip DTO
+            var updated = GetPlaylistById(id);
             return (true, null, updated);
         }
-            
-            public (bool Success, string? Error) DeletePlaylist(int id)
-{
-    // 1️⃣ Rasti playlist
-    var playlist = _context.Playlists
-        .Include(p => p.Host)
-        .FirstOrDefault(p => p.Id == id);
 
-    if (playlist == null)
-        return (false, $"Playlist with ID {id} not found.");
+        // ============================================================
+        //  DELETE: Pašalinti grojarąštį
+        // ============================================================
+        public (bool Success, string? Error) DeletePlaylist(int id)
+        {
+            var playlist = _context.Playlists
+                .Include(p => p.Host)
+                .FirstOrDefault(p => p.Id == id);
 
-    // 2️⃣ Autorizacijos tikrinimas
-    if (playlist.Host != null && playlist.Host.Role != UserRole.Host && playlist.Host.Role != UserRole.Admin)
-        return (false, "Only hosts or admins can delete playlists.");
+            if (playlist == null)
+                return (false, $"Playlist with ID {id} not found.");
 
-    // 3️⃣ Ištrinti playlist
-    _context.Playlists.Remove(playlist);
-    _context.SaveChanges();
+            if (playlist.Host != null && playlist.Host.Role != UserRole.Host && playlist.Host.Role != UserRole.Admin)
+                return (false, "Only hosts or admins can delete playlists.");
 
-    return (true, null);
-}
+            _context.Playlists.Remove(playlist);
+            _context.SaveChanges();
 
-
-
-
+            return (true, null);
+        }
     }
 }

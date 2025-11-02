@@ -40,18 +40,10 @@ namespace MyApi.Controllers
         public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
             var (success, error, created) = _playlistService.CreatePlaylist(newPlaylist);
-
+            
             if (!success)
-            {
-                if (error != null && error.Contains("already exists"))
-                    return Conflict(error);
-                if (error != null && error.Contains("not found"))
-                    return NotFound(error);
-                if (error != null && error.Contains("not authorized"))
-                    return StatusCode(403, error);
                 return BadRequest(error);
-            }
-
+            
             return CreatedAtAction(nameof(GetPlaylistById), new { id = created!.Id }, created);
         }
 
