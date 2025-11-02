@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyApi.Models;
 using MyApi.Dtos;
-using MyApi.Utils;
-using System.Linq;
+using MyApi.Services;
 
 namespace MyApi.Controllers
 {
@@ -11,165 +8,49 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class SongsController : ControllerBase
     {
-        private readonly PlaylistAppContext _context;
+        private readonly SongService _songService;
 
-        public SongsController(PlaylistAppContext context)
+        public SongsController(SongService songService)
         {
-            _context = context;
+            _songService = songService;
         }
 
-        //This is a helper makes sure a Song (by Title + Album) exists in the database.
-        //If it already exists return it (no duplicates)
-        // If it doesn’t then create it, and also ensure each Artist exists (find or create) and link them to the song, then save.
-        private Song EnsureSong(
-            string title,
-            string? album = null,
-            Duration? duration = null,
-            params string[] artistNames)
-        {
-            var existing = _context.Songs
-                .Include(s => s.Artists)
-                .FirstOrDefault(s => s.Title == title && s.Album == album);
-
-            if (existing != null)
-                return existing;
-
-            var song = new Song
-            {
-                Title = title,
-                Album = album,
-                DurationSeconds = duration?.Seconds
-            };
-
-            foreach (var artistName in artistNames)
-            {
-                var artist = _context.Artists.FirstOrDefault(a => a.Name == artistName);
-                if (artist == null)
-                    artist = new Artist { Name = artistName };
-
-                song.Artists.Add(artist);
-            }
-
-            _context.Songs.Add(song);
-            _context.SaveChanges();
-
-            return song;
-        }
-
-        // POST /api/songs/add-to-playlist -> add a song to a playlist
+        // POST /api/songs/add-to-playlist -> pridėti dainą į playlist
         [HttpPost("add-to-playlist")]
         public IActionResult AddSongToPlaylist([FromBody] AddSongToPlaylistDto request)
         {
-            var playlist = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                .FirstOrDefault(p => p.Id == request.PlaylistId);
+            var (success, error, songId) = _songService.AddSongToPlaylist(request);
 
-            if (playlist == null)
-                return NotFound($"Playlist with ID {request.PlaylistId} not found.");
-
-            // artists are provided as a list in the DTO
-            var artistNames = request.ArtistNames
-                .Select(a => a.Trim())
-                .Where(a => !string.IsNullOrEmpty(a))
-                .ToList();
-
-            Duration? duration = null;
-            if (request.DurationMs.HasValue)
+            if (!success)
             {
-                duration = Duration.FromMilliseconds(request.DurationMs.Value);
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                if (error != null && error.Contains("already in the playlist"))
+                    return Conflict(error);
+                return BadRequest(error);
             }
 
-            // Check if song already exists (by title and album)
-            var song = EnsureSong(
-                title: request.Title,
-                album: request.Album,
-                duration: duration,
-                artistNames: artistNames.ToArray());
-
-            // Check if song is already in the playlist
-            var alreadyInPlaylist = playlist.PlaylistSongs.Any(ps => ps.SongId == song.Id);
-            if (alreadyInPlaylist)
-                return Conflict("This song is already in the playlist.");
-
-            // Extension method usage
-            var nextPosition = playlist.PlaylistSongs.NextPosition();
-
-            var playlistSong = new PlaylistSong
-            {
-                PlaylistId = playlist.Id,
-                SongId = song.Id,
-                Position = nextPosition
-            };
-
-            _context.PlaylistSongs.Add(playlistSong);
-            _context.SaveChanges();
-
-            return Ok(new { message = "Song added successfully", songId = song.Id });
+            return Ok(new { message = "Song added successfully", songId });
         }
 
-        // GET /api/songs -> return all songs
-        [HttpGet]
-        // GET /api/songs -> return all songs
+        // GET /api/songs -> grąžinti visas dainas
         [HttpGet]
         public IActionResult GetAllSongs()
         {
-            // Load songs (with artists) from DB into memory
-            var entities = _context.Songs
-                .Include(s => s.Artists)
-                .AsNoTracking()
-                .ToList();
-
-            // Optional: sort if needed
-            entities.Sort();
-
-            // Convert to DTOs
-            var songs = entities.Select(s => new SongDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Album = s.Album,
-                DurationFormatted = s.DurationSeconds.HasValue
-                    ? new Duration(s.DurationSeconds.Value).ToString()
-                    : null,
-                Artists = s.Artists.Select(a => new ArtistDto
-                {
-                    Id = a.Id,
-                    Name = a.Name
-                }).ToList()
-            }).ToList();
-
+            var songs = _songService.GetAllSongs();
             return Ok(songs);
         }
 
-        // GET /api/songs/{id} -> return song by ID
+        // GET /api/songs/{id} -> grąžinti dainą pagal ID
         [HttpGet("{id:int}")]
         public IActionResult GetSongById(int id)
         {
-            var song = _context.Songs
-                .Include(s => s.Artists)
-                .AsNoTracking()
-                .Where(s => s.Id == id)
-                .Select(s => new SongDto
-                {
-                    Id = s.Id,
-                    Title = s.Title,
-                    Album = s.Album,
-                    DurationFormatted = s.DurationSeconds.HasValue
-                        ? new Duration(s.DurationSeconds.Value).ToString()
-                        : null,
-                    Artists = s.Artists.Select(a => new ArtistDto
-                    {
-                        Id = a.Id,
-                        Name = a.Name
-                    }).ToList()
-                })
-                .FirstOrDefault();
+            var song = _songService.GetSongById(id);
 
             if (song == null)
                 return NotFound($"Song with ID {id} not found.");
 
             return Ok(song);
         }
-
     }
 }

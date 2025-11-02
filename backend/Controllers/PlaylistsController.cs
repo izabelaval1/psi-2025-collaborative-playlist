@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyApi.Models;
 using MyApi.Dtos;
-using System.Linq;
-using MyApi.Utils;
+using MyApi.Services;
 
 namespace MyApi.Controllers
 {
@@ -11,110 +8,26 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class PlaylistsController : ControllerBase
     {
-        private readonly PlaylistAppContext _context;
+        private readonly PlaylistService _playlistService;
 
-        public PlaylistsController(PlaylistAppContext context)
+        public PlaylistsController(PlaylistService playlistService)
         {
-            _context = context;
+            _playlistService = playlistService;
         }
 
-        // GET /api/playlists -> return all playlists
+        // GET /api/playlists -> grąžinti visas playlists
         [HttpGet]
         public IActionResult GetPlaylists()
         {
-            var playlists = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username
-                    } : null,
-                    Songs = p.PlaylistSongs.OrderBy(ps => ps.Position).Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        DurationFormatted = ps.Song.DurationSeconds.HasValue
-                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                            : null,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
-                        {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username
-                    }).ToList()
-                })
-                .ToList();
-
+            var playlists = _playlistService.GetAllPlaylists();
             return Ok(playlists);
         }
 
-        // GET /api/playlists/{id} -> return playlist by ID
+        // GET /api/playlists/{id} -> grąžinti playlist pagal ID
         [HttpGet("{id:int}")]
         public IActionResult GetPlaylistById(int id)
         {
-            var playlist = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            DurationFormatted = ps.Song.DurationSeconds.HasValue
-                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                                : null,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
+            var playlist = _playlistService.GetPlaylistById(id);
 
             if (playlist == null)
                 return NotFound($"Playlist with ID {id} not found.");
@@ -122,223 +35,68 @@ namespace MyApi.Controllers
             return Ok(playlist);
         }
 
-        // POST /api/playlists -> create a new playlist
+        // POST /api/playlists -> sukurti naują playlist
         [HttpPost]
         public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
-            var exists = _context.Playlists.Any(p => p.Name == newPlaylist.Name);
-            if (exists)
-                return Conflict($"A playlist with the name '{newPlaylist.Name}' already exists.");
-
-            // Check if host exists and has proper role
-            var host = _context.Users.FirstOrDefault(u => u.Id == newPlaylist.HostId);
-            if (host == null)
-                return NotFound($"Host with ID {newPlaylist.HostId} not found.");
-
-            if (host.Role != UserRole.Host && host.Role != UserRole.Admin)
-                return StatusCode(403, $"User with ID {newPlaylist.HostId} is not authorized to host playlists.");
-
-            var playlist = new Playlist
-            {
-                Name = newPlaylist.Name,
-                Description = newPlaylist.Description,
-                HostId = newPlaylist.HostId
-            };
-
-            _context.Playlists.Add(playlist);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(GetPlaylistById), new { id = playlist.Id }, playlist);
+            var (success, error, created) = _playlistService.CreatePlaylist(newPlaylist);
+            
+            if (!success)
+                return BadRequest(error);
+            
+            return CreatedAtAction(nameof(GetPlaylistById), new { id = created!.Id }, created);
         }
 
-        // PUT /api/playlists/by-id/{id} -> full update by ID
+        // PUT /api/playlists/by-id/{id} -> pilnas atnaujinimas pagal ID
         [HttpPut("by-id/{id:int}")]
         public IActionResult UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
         {
-            var existing = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                .Include(p => p.Host)
-                .FirstOrDefault(p => p.Id == id);
+            var (success, error, updated) = _playlistService.UpdatePlaylistById(id, updatedPlaylist);
 
-            if (existing == null)
-                return NotFound();
-
-            // Authorization check
-            if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
-                return StatusCode(403, "Only hosts or admins can update playlists.");
-
-            existing.Name = updatedPlaylist.Name;
-            existing.Description = updatedPlaylist.Description;
-
-            // Update PlaylistSongs
-            if (updatedPlaylist.SongIds != null)
+            if (!success)
             {
-                // Remove existing playlist songs
-                var existingSongs = existing.PlaylistSongs.ToList();
-                foreach (var ps in existingSongs)
-                {
-                    _context.PlaylistSongs.Remove(ps);
-                }
-
-                // Add new playlist songs
-                var position = 1;
-                foreach (var songId in updatedPlaylist.SongIds)
-                {
-                    var dbSong = _context.Songs.FirstOrDefault(s => s.Id == songId);
-                    if (dbSong != null)
-                    {
-                        _context.PlaylistSongs.Add(new PlaylistSong
-                        {
-                            PlaylistId = existing.Id,
-                            SongId = dbSong.Id,
-                            Position = position++
-                        });
-                    }
-                }
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                if (error != null && error.Contains("Only hosts"))
+                    return StatusCode(403, error);
+                return BadRequest(error);
             }
-
-            _context.SaveChanges();
-
-            // Return updated playlist
-            var updated = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            DurationFormatted = ps.Song.DurationSeconds.HasValue
-                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                                : null,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
 
             return Ok(updated);
         }
 
-        // PATCH /api/playlists/{id} -> partial update
+        // PATCH /api/playlists/{id} -> dalinis atnaujinimas
         [HttpPatch("{id:int}")]
         public IActionResult EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
         {
-            var existing = _context.Playlists
-                .Include(p => p.Host)
-                .FirstOrDefault(p => p.Id == id);
+            var (success, error, updated) = _playlistService.EditPlaylist(id, editedPlaylist);
 
-            if (existing == null)
-                return NotFound();
-
-            // Authorization check
-            if (existing.Host != null && existing.Host.Role != UserRole.Host && existing.Host.Role != UserRole.Admin)
-                return StatusCode(403, "Only hosts or admins can edit playlists.");
-
-            if (!string.IsNullOrEmpty(editedPlaylist.Name))
-                existing.Name = editedPlaylist.Name;
-
-            if (editedPlaylist.Description != null)
-                existing.Description = editedPlaylist.Description;
-
-            _context.SaveChanges();
-
-            // Return updated playlist
-            var updated = _context.Playlists
-                .Include(p => p.PlaylistSongs)
-                    .ThenInclude(ps => ps.Song)
-                        .ThenInclude(s => s.Artists)
-                .Include(p => p.Users)
-                .Include(p => p.Host)
-                .AsNoTracking()
-                .Where(p => p.Id == id)
-                .Select(p => new PlaylistResponseDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    HostId = p.HostId,
-                    Host = p.Host != null ? new UserDto
-                    {
-                        Id = p.Host.Id,
-                        Username = p.Host.Username,
-                        Role = p.Host.Role
-                    } : null,
-                    Songs = p.PlaylistSongs
-                        .OrderBy(ps => ps.Position)
-                        .Select(ps => new SongDto
-                        {
-                            Id = ps.Song.Id,
-                            Title = ps.Song.Title,
-                            Album = ps.Song.Album,
-                            DurationFormatted = ps.Song.DurationSeconds.HasValue
-                                ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                                : null,
-                            Position = ps.Position,
-                            Artists = ps.Song.Artists.Select(a => new ArtistDto
-                            {
-                                Id = a.Id,
-                                Name = a.Name
-                            }).ToList()
-                        }).ToList(),
-                    Collaborators = p.Users.Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        Username = u.Username,
-                        Role = u.Role
-                    }).ToList()
-                })
-                .FirstOrDefault();
+            if (!success)
+            {
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                if (error != null && error.Contains("Only hosts"))
+                    return StatusCode(403, error);
+                return BadRequest(error);
+            }
 
             return Ok(updated);
         }
 
-        // DELETE /api/playlists/{id} -> delete playlist by ID
+        // DELETE /api/playlists/{id} -> ištrinti playlist pagal ID
         [HttpDelete("{id:int}")]
         public IActionResult DeletePlaylistById(int id)
         {
-            var playlist = _context.Playlists
-                .Include(p => p.Host)
-                .FirstOrDefault(p => p.Id == id);
+            var (success, error) = _playlistService.DeletePlaylist(id);
 
-            if (playlist == null)
-                return NotFound();
-
-            // Authorization check
-            if (playlist.Host != null && playlist.Host.Role != UserRole.Host && playlist.Host.Role != UserRole.Admin)
-                return StatusCode(403, "Only hosts or admins can delete playlists.");
-
-            _context.Playlists.Remove(playlist);
-            _context.SaveChanges();
+            if (!success)
+            {
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                if (error != null && error.Contains("Only hosts"))
+                    return StatusCode(403, error);
+                return BadRequest(error);
+            }
 
             return NoContent();
         }

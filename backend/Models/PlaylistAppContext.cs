@@ -42,7 +42,7 @@ public partial class PlaylistAppContext : DbContext
             entity.Property(e => e.Role)
             .HasColumnName("role")
             .HasMaxLength(20)
-            .HasConversion<string>(); 
+            .HasConversion<int>(); 
         });
 
         modelBuilder.Entity<Song>(entity =>
