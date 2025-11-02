@@ -1,3 +1,4 @@
+//komentaras nes su gitu kazkas blogai
 import type { Playlist } from "../types/Playlist";
 
 const BASE_URL = "http://localhost:5000/api/playlists";
