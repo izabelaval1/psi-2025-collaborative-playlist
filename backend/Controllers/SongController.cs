@@ -52,18 +52,18 @@ namespace MyApi.Controllers
 
             return Ok(song);
         }
-        
+
         [HttpDelete("{id:int}")]
         public IActionResult DeleteSong(int id)
         {
-            var song = _context.Songs.Find(id);
-            if (song == null)
-            {
-                return NotFound($"Song with ID {id} not found.");
-            }
+            var (success, error) = _songService.DeleteSong(id);
 
-            _context.Songs.Remove(song);
-            _context.SaveChanges();
+            if (!success)
+            {
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                return BadRequest(error);
+            }
 
             return Ok(new { message = "Song deleted successfully" });
         }

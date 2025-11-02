@@ -159,5 +159,19 @@ namespace MyApi.Services
 
             return song;
         }
+
+        // Ištrinti dainą pagal ID
+        public (bool Success, string? Error) DeleteSong(int id)
+        {
+            var song = _context.Songs.Find(id);
+
+            if (song == null)
+                return (false, $"Song with ID {id} not found.");
+
+            _context.Songs.Remove(song);
+            _context.SaveChanges();
+
+            return (true, null);
+        }
     }
 }

@@ -40,10 +40,10 @@ namespace MyApi.Controllers
         public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
             var (success, error, created) = _playlistService.CreatePlaylist(newPlaylist);
-            
+
             if (!success)
                 return BadRequest(error);
-            
+
             return CreatedAtAction(nameof(GetPlaylistById), new { id = created!.Id }, created);
         }
 
@@ -104,14 +104,14 @@ namespace MyApi.Controllers
         [HttpDelete("{playlistId:int}/song/{songId:int}")]
         public IActionResult RemoveSongFromPlaylist(int playlistId, int songId)
         {
-            var playlistSong = _context.PlaylistSongs
-                .FirstOrDefault(ps => ps.PlaylistId == playlistId && ps.SongId == songId);
+            var (success, error) = _playlistService.RemoveSongFromPlaylist(playlistId, songId);
 
-            if (playlistSong == null)
-                return NotFound("This song is not in the playlist.");
-
-            _context.PlaylistSongs.Remove(playlistSong);
-            _context.SaveChanges();
+            if (!success)
+            {
+                if (error != null && error.Contains("not found"))
+                    return NotFound(error);
+                return BadRequest(error);
+            }
 
             return Ok(new { message = "Song removed from playlist successfully" });
         }

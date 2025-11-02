@@ -261,5 +261,21 @@ namespace MyApi.Services
 
             return (true, null);
         }
+        // ============================================================
+        //  DELETE: Pašalinti dainą iš grojarąščio
+        // ============================================================
+        public (bool Success, string? Error) RemoveSongFromPlaylist(int playlistId, int songId)
+        {
+            var playlistSong = _context.PlaylistSongs
+                .FirstOrDefault(ps => ps.PlaylistId == playlistId && ps.SongId == songId);
+
+            if (playlistSong == null)
+                return (false, "This song is not found in the playlist.");
+
+            _context.PlaylistSongs.Remove(playlistSong);
+            _context.SaveChanges();
+
+            return (true, null);
+        }
     }
 }
