@@ -109,8 +109,6 @@ namespace MyApi.Controllers
 
         // GET /api/songs -> return all songs
         [HttpGet]
-        // GET /api/songs -> return all songs
-        [HttpGet]
         public IActionResult GetAllSongs()
         {
             // Load songs (with artists) from DB into memory
@@ -169,6 +167,21 @@ namespace MyApi.Controllers
                 return NotFound($"Song with ID {id} not found.");
 
             return Ok(song);
+        }
+        
+        [HttpDelete("{id:int}")]
+        public IActionResult DeleteSong(int id)
+        {
+            var song = _context.Songs.Find(id);
+            if (song == null)
+            {
+                return NotFound($"Song with ID {id} not found.");
+            }
+
+            _context.Songs.Remove(song);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Song deleted successfully" });
         }
 
     }
