@@ -1,3 +1,4 @@
+// src/components/PlaylistList.tsx
 import {
   useState,
   useEffect,
@@ -7,6 +8,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Playlist } from "../types/Playlist";
+import { playlistService } from "../services/PlaylistService";
 import "../styles/Playlists.scss";
 
 interface PlaylistListProps {
@@ -25,11 +27,10 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
     const [editName, setEditName] = useState("");
     const [editDescription, setEditDescription] = useState<string | undefined>(undefined);
 
+    // Load playlists
     const loadPlaylists = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/playlists");
-        if (!res.ok) throw new Error("Failed to load playlists");
-        const data = await res.json();
+        const data = await playlistService.getAll();
         setPlaylists(data);
         onPlaylistsLoaded?.(data);
       } catch (err) {
@@ -41,22 +42,13 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
       loadPlaylists();
     }, []);
 
-    useImperativeHandle(ref, () => ({
-      refresh: loadPlaylists,
-    }));
+    useImperativeHandle(ref, () => ({ refresh: loadPlaylists }));
 
+    // Delete playlist
     const deletePlaylist = async (id: number) => {
       if (!confirm("Delete this playlist?")) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/playlists/${id}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || "Delete failed");
-        }
-
+        await playlistService.delete(id);
         const newPlaylists = playlists.filter((p) => p.id !== id);
         setPlaylists(newPlaylists);
         onPlaylistsLoaded?.(newPlaylists);
@@ -66,28 +58,15 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
       }
     };
 
+    // Save edited playlist
     const saveEdit = async (playlistId: number) => {
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/playlists/${playlistId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: editName,
-              description: editDescription,
-            }),
-          }
-        );
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || "Failed to save edit");
-        }
-
-        const updatedPlaylist = await res.json();
+        const updated = await playlistService.update(playlistId, {
+          name: editName,
+          description: editDescription,
+        });
         const newPlaylists = playlists.map((p) =>
-          p.id === updatedPlaylist.id ? updatedPlaylist : p
+          p.id === updated.id ? updated : p
         );
         setPlaylists(newPlaylists);
         onPlaylistsLoaded?.(newPlaylists);
@@ -99,22 +78,13 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
     };
 
     return (
-      <div
-        className="playlist-container"
-        data-testid="playlist-list__container"
-      >
-        <h2
-          className="playlist-title"
-          data-testid="playlist-list__title"
-        >
+      <div className="playlist-container" data-testid="playlist-list__container">
+        <h2 className="playlist-title" data-testid="playlist-list__title">
           Playlists:
         </h2>
 
         {playlists.length === 0 && (
-          <p
-            className="playlist-empty"
-            data-testid="playlist-list__empty"
-          >
+          <p className="playlist-empty" data-testid="playlist-list__empty">
             No playlists yet — create one!
           </p>
         )}
@@ -165,14 +135,9 @@ const PlaylistList = forwardRef<PlaylistListHandle, PlaylistListProps>(
               </div>
             ) : (
               <div className="flex justify-between items-center">
-                <div
-                  className="playlist-info"
-                  data-testid="playlist-list__info"
-                >
+                <div className="playlist-info" data-testid="playlist-list__info">
                   <h2 data-testid="playlist-list__name">{playlist.name}</h2>
-                  <p data-testid="playlist-list__desc">
-                    {playlist.description}
-                  </p>
+                  <p data-testid="playlist-list__desc">{playlist.description}</p>
                 </div>
 
                 <div className="playlist-icons flex gap-3">
