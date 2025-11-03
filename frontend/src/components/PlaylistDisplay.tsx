@@ -1,10 +1,10 @@
 import React from "react";
 import type { PlaylistResponseDto } from "../types/PlaylistResponseDto.ts";
-import { PlaylistService } from "../services/PlaylistService.ts";
+import {PlaylistService } from "../services/PlaylistService.ts";
 
 interface PlaylistDisplayProps {
   playlist: PlaylistResponseDto | null;
-  onSongRemoved?: () => void;
+  onSongRemoved: () => void;
 }
 
 const formatDuration = (seconds?: number): string => {

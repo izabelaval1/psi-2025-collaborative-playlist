@@ -29,12 +29,12 @@ builder.Services.AddScoped<SpotifyService>();
 // ===================================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ViteDev", policy =>
-        policy
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173") // tavo Vite dev serveriai
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-    );
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") 
+              .AllowAnyHeader()
+              .AllowAnyMethod(); // GET, POST, PUT, DELETE
+    });
 });
 
 // ===================================================
@@ -63,7 +63,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseCors("ViteDev"); // leidžia frontend’ui pasiekti API
+app.UseCors(); // leidžia frontend’ui pasiekti API
 
 app.UseAuthorization();
 
