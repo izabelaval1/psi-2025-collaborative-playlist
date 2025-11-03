@@ -1,0 +1,83 @@
+.loginPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loginBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: #0f1516;
+  border: 1px solid #1e2426;
+  padding: 40px 20px;
+  border-radius: 20px;
+  max-width: 500px;
+}
+.loginBox .header {
+  font-size: 32px;
+}
+.loginBox .text {
+  font-size: 16px;
+  font-weight: 100;
+  color: #6b7778;
+}
+.loginBox form {
+  width: 100%;
+}
+.loginBox form .nameRow {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+}
+.loginBox form .formGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+.loginBox form .formGroup label {
+  font-size: 16px;
+  font-weight: 100;
+  color: #6b7778;
+}
+.loginBox form .formGroup input {
+  border-radius: 20px;
+  padding: 8px;
+  border: 1px solid #1e2426;
+  background-color: rgba(20, 12, 12, 0.337254902) !important;
+  width: 100%;
+}
+.loginBox form .formGroup input::-moz-placeholder {
+  font-size: 16px;
+  font-weight: 100;
+  color: rgba(107, 119, 120, 0.2431372549);
+}
+.loginBox form .formGroup input::placeholder {
+  font-size: 16px;
+  font-weight: 100;
+  color: rgba(107, 119, 120, 0.2431372549);
+}
+
+.signInBtn {
+  width: 100%;
+  border-radius: 20px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 100;
+  margin-bottom: 20px;
+}
+.signInBtn .icon {
+  margin-right: 8px;
+}
+
+.signupText {
+  text-align: center;
+  align-self: center;
+}
+.signupText .grey {
+  color: #6b7778;
+}/*# sourceMappingURL=registerPage.module.css.map */
