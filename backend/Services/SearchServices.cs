@@ -17,29 +17,32 @@ namespace MyApi.Services
         }
 
         // Paieška Spotify
+        // task<...> - async metodas, grąžina rezultatą ateityje
         public async Task<(bool Success, string? Error, string? JsonResult)> SearchTracks(string query)
         {
             try
             {
+                // Gauti Spotify credentials iš appsettings.json
                 var clientId = _configuration["Spotify:ClientID"];
                 var clientSecret = _configuration["Spotify:ClientSecret"];
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
                     return (false, "Spotify credentials not configured", null);
 
-                // 1️⃣ Gauti token
+                //  Gauti token
+                // kvieciame helper metoda
                 var token = await GetSpotifyToken(clientId, clientSecret);
                 if (token == null)
                     return (false, "Failed to get Spotify access token", null);
 
-                // 2️⃣ Ieškoti dainų naudojant token
+                //  Ieškoti dainų naudojant token
                 _httpClient.DefaultRequestHeaders.Clear();
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
                 var searchUrl = $"https://api.spotify.com/v1/search?q={Uri.EscapeDataString(query)}&type=track&limit=5";
                 var response = await _httpClient.GetAsync(searchUrl);
 
-                // 3️⃣ Grąžinti rezultatą
+                // Grąžinti rezultatą
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();

@@ -13,6 +13,7 @@ namespace MyApi.Services
     {
         private readonly PlaylistAppContext _context;
 
+    
         public PlaylistService(PlaylistAppContext context)
         {
             _context = context;
@@ -31,7 +32,7 @@ namespace MyApi.Services
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
-                .ToList();  // ✅ Execute query and bring to memory
+                .ToList();  // Execute query and bring to memory
 
             // Tada konvertuojame į DTO atmintyje
             return playlists.Select(p => new PlaylistResponseDto
@@ -83,7 +84,8 @@ namespace MyApi.Services
         // ============================================================
         public PlaylistResponseDto? GetPlaylistById(int id)
         {
-            // ✅ Pirmiausia gauname entitą iš DB
+            //  Pirmiausia gauname entitą iš DB
+            // viena pasiimam eilute is playlists lenteles su tuo id kuris perduotas ir sukuriam objekta
             var playlist = _context.Playlists
                 .Include(p => p.PlaylistSongs)
                     .ThenInclude(ps => ps.Song)
@@ -218,6 +220,7 @@ namespace MyApi.Services
         // ============================================================
         public (bool Success, string? Error, PlaylistResponseDto? Updated) EditPlaylist(int id, PlaylistPatchDto editedPlaylist)
         {
+            // uzkrauname playlista ir useri (hosta) is db
             var existing = _context.Playlists
                 .Include(p => p.Host)
                 .FirstOrDefault(p => p.Id == id);
@@ -236,7 +239,7 @@ namespace MyApi.Services
 
             _context.SaveChanges();
 
-            // ✅ Gauname atnaujintą grojarąštį kaip DTO
+            // Gauname atnaujintą grojarąštį kaip DTO
             var updated = GetPlaylistById(id);
             return (true, null, updated);
         }

@@ -9,18 +9,17 @@ namespace MyApi.Services
     {
         private readonly PlaylistAppContext _context;
 
+        // dependency injection
         public SongService(PlaylistAppContext context)
         {
             _context = context;
         }
 
         // Helper metodas - užtikrina, kad daina egzistuoja DB
-        private Song EnsureSong(
-            string title,
-            string? album = null,
-            Duration? duration = null,
-            params string[] artistNames)
+        private Song EnsureSong(string title, string? album = null, Duration? duration = null, params string[] artistNames)
         {
+            // uzkrauna daina ir atlikejus is db
+            // patikrina ar tokia daina jau egzistuoja pagal title ir album
             var existing = _context.Songs
                 .Include(s => s.Artists)
                 .FirstOrDefault(s => s.Title == title && s.Album == album);
@@ -35,6 +34,9 @@ namespace MyApi.Services
                 DurationSeconds = duration?.Seconds
             };
 
+            // pereina per visus artists
+            // jei randa naudojama esama artist
+            // jei neranda sukuriamas naujas artist
             foreach (var artistName in artistNames)
             {
                 var artist = _context.Artists.FirstOrDefault(a => a.Name == artistName);
@@ -44,6 +46,7 @@ namespace MyApi.Services
                 song.Artists.Add(artist);
             }
 
+            // issaugome daina i db
             _context.Songs.Add(song);
             _context.SaveChanges();
 

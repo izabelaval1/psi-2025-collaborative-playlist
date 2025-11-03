@@ -10,6 +10,9 @@ namespace MyApi.Controllers
     {
         private readonly SongService _songService;
 
+        // dependency injection
+        // nereikia kurti new SongService()
+        // konstruktorius
         public SongsController(SongService songService)
         {
             _songService = songService;

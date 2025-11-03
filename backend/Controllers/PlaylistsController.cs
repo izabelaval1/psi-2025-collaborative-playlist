@@ -49,6 +49,7 @@ namespace MyApi.Controllers
 
         // PUT /api/playlists/by-id/{id} -> pilnas atnaujinimas pagal ID
         [HttpPut("by-id/{id:int}")]
+        // [FromBody] - nurodo, kad duomenys bus paimti iš užklausos kūno ir paildyti į PlaylistUpdateDto objektą
         public IActionResult UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
         {
             var (success, error, updated) = _playlistService.UpdatePlaylistById(id, updatedPlaylist);
@@ -67,6 +68,7 @@ namespace MyApi.Controllers
 
         // PATCH /api/playlists/{id} -> dalinis atnaujinimas
         [HttpPatch("{id:int}")]
+        // grazina http atsakyma
         public IActionResult EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
         {
             var (success, error, updated) = _playlistService.EditPlaylist(id, editedPlaylist);
