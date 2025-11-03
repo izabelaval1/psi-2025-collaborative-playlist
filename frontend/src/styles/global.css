@@ -2,8 +2,10 @@
 
 /* Universal dark background and text reset */
 html, body, #root {
-  background-color: #0a0a0a !important;
-  color: #f1f1f1 !important;
+  background-color: #0b0d0f !important;
+  color: #e6eff1 !important;
+  padding: 8px;
+  font-family: 'Inter'
 }
 
 /* Ensure all Bootstrap-based form controls respect dark theme */
@@ -32,6 +34,7 @@ button {
   border: none !important;
 }
 button:hover {
+
   background-color: #16a34a !important; /* Tailwind green-600 */
 }
 
@@ -53,3 +56,4 @@ th, td {
   background-color: transparent !important;
   border-color: #333 !important;
 }
+
