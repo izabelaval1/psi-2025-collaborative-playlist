@@ -9,8 +9,7 @@ namespace MyApi.Controllers
     {
         private readonly SpotifyService _spotifyService;
 
-        // dependency injection
-        // nereikia 
+        // dependency injection 
         public SpotifyController(SpotifyService spotifyService)
         {
             _spotifyService = spotifyService;
