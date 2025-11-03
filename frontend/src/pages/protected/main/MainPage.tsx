@@ -7,6 +7,7 @@ import SongSearch from "../../../components/SongSearch";
 import PlaylistModal from "../../../components/PlaylistModal";
 import type { PlaylistResponseDto } from "../../../types/PlaylistResponseDto";
 import type { Playlist } from "../../../types/Playlist";
+import { playlistService } from "../../../services/PlaylistService";
 
 export default function MainPage() {
   const [selectedPlaylist, setSelectedPlaylist] =
@@ -15,12 +16,14 @@ export default function MainPage() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const playlistListRef = useRef<PlaylistListHandle>(null);
 
-  const handleSongAdded = () => {
-    if (selectedPlaylist) {
-      fetch(`http://localhost:5000/api/playlists/${selectedPlaylist.id}`)
-        .then((res) => res.json())
-        .then((data) => setSelectedPlaylist(data))
-        .catch((err) => console.error("Failed to refresh playlist:", err));
+  const handleSongListChanged = async () => {
+    if (!selectedPlaylist) return;
+  
+    try {
+      const updated = await playlistService.getById(selectedPlaylist.id);
+      setSelectedPlaylist(updated);
+    } catch (err) {
+      console.error("Failed to refresh playlist:", err);
     }
   };
 
@@ -49,9 +52,12 @@ export default function MainPage() {
       <div className="vDivider w-px bg-neutral-800"></div>
 
       <div className="flex flex-col flex-1 overflow-hidden">
-        <SongSearch onSongAdded={handleSongAdded} playlists={playlists} />
+        <SongSearch onSongAdded={handleSongListChanged} playlists={playlists} />
         <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
-          <PlaylistDisplay playlist={selectedPlaylist} />
+          <PlaylistDisplay
+            playlist={selectedPlaylist}
+            onSongRemoved={handleSongListChanged}
+          />
         </div>
       </div>
 
@@ -67,5 +73,4 @@ export default function MainPage() {
     </div>
   );
 }
-
 

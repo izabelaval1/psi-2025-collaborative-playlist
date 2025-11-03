@@ -248,13 +248,18 @@ namespace MyApi.Services
         {
             var playlist = _context.Playlists
                 .Include(p => p.Host)
+                .Include(p => p.PlaylistSongs)
                 .FirstOrDefault(p => p.Id == id);
+              
 
             if (playlist == null)
                 return (false, $"Playlist with ID {id} not found.");
 
             if (playlist.Host != null && playlist.Host.Role != UserRole.Host && playlist.Host.Role != UserRole.Admin)
                 return (false, "Only hosts or admins can delete playlists.");
+
+            if (playlist.PlaylistSongs.Any())
+                _context.PlaylistSongs.RemoveRange(playlist.PlaylistSongs);
 
             _context.Playlists.Remove(playlist);
             _context.SaveChanges();

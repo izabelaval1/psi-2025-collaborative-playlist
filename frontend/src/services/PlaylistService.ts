@@ -1,17 +1,25 @@
 // handles all API calls for playlists (get, create, update, delete)
 
 import type { Playlist } from "../types/Playlist";
+import type { PlaylistResponseDto } from "../types/PlaylistResponseDto";
 
 const BASE_URL = "http://localhost:5000/api/playlists";
 
 export const playlistService = {
+
+  async getById(id: number): Promise<PlaylistResponseDto> {  
+    const res = await fetch(`${BASE_URL}/${id}`);
+    if (!res.ok) throw new Error("Failed to load playlist");
+    return res.json();
+  },
+
   async getAll(): Promise<Playlist[]> {
     const res = await fetch(BASE_URL);
     if (!res.ok) throw new Error("Failed to load playlists");
     return res.json();
   },
 
-  async create(data: { name: string; description?: string; hostId: number }): Promise<Playlist> {
+  async create(data: { name: string; description?: string; hostId: number}): Promise<Playlist> {
     const res = await fetch(BASE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

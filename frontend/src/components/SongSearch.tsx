@@ -63,6 +63,7 @@ export default function SongSearch({ onSongAdded, playlists }: SongSearchProps) 
       <div className="flex items-center gap-2">
         {/* Playlist Dropdown */}
         <select
+          aria-label="Choose a playlist"
           data-testid="song-search-playlist-select"
           value={selectedPlaylistId ?? ""}
           onChange={(e) => setSelectedPlaylistId(Number(e.target.value))}

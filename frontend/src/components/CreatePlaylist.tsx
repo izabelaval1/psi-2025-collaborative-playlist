@@ -1,4 +1,4 @@
-// src/components/CreatePlaylistForm.tsx
+
 import { useState } from "react";
 import type { Playlist } from "../types/Playlist";
 import { playlistService } from "../services/PlaylistService";
@@ -28,8 +28,8 @@ export default function CreatePlaylist({ onPlaylistCreated }: CreatePlaylistProp
     const { name, description, hostId } = form;
 
     if (!name.trim()) return setError("Please enter a playlist name.");
-    if (!hostId.trim() || Number(hostId) <= 0)
-      return setError("Host ID must be a valid positive number.");
+    // if (!hostId.trim() || Number(hostId) <= 0)
+    //   return setError("Host ID must be a valid positive number.");
 
     setLoading(true);
     setError(null);
@@ -39,7 +39,7 @@ export default function CreatePlaylist({ onPlaylistCreated }: CreatePlaylistProp
       const newPlaylist = await playlistService.create({
         name: name.trim(),
         description: description.trim(),
-        hostId: Number(hostId),
+        hostId: Number(hostId)
       });
 
       onPlaylistCreated(newPlaylist);

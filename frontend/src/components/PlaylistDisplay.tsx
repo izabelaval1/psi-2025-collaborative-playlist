@@ -3,6 +3,7 @@ import type { PlaylistResponseDto } from "../types/PlaylistResponseDto.ts";
 
 interface PlaylistDisplayProps {
   playlist: PlaylistResponseDto | null;
+  onSongRemoved: () => void;
 }
 
 const formatDuration = (seconds?: number): string => {
