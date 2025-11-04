@@ -39,6 +39,17 @@ export const PlaylistService = {
     return res.json();
   },
 
+  async removeFromPlaylist(playlistId: number, songId: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/${playlistId}/song/${songId}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text() || "Failed to remove song from playlist");
+  }
+  },
+
+
   async delete(id: number): Promise<void> {
     const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error(await res.text() || "Failed to delete playlist");
