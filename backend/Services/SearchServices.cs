@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using MyApi.Exceptions;
 
 namespace MyApi.Services
 {
@@ -18,6 +19,7 @@ namespace MyApi.Services
 
         // Paieška Spotify
         // task<...> - async metodas, grąžina rezultatą ateityje
+        // Uses async/await to perform non-blocking Spotify API calls
         public async Task<(bool Success, string? Error, string? JsonResult)> SearchTracks(string query)
         {
             try
@@ -33,7 +35,8 @@ namespace MyApi.Services
                 // kvieciame helper metoda
                 var token = await GetSpotifyToken(clientId, clientSecret);
                 if (token == null)
-                    return (false, "Failed to get Spotify access token", null);
+                    throw new SpotifyServiceException("Failed to get Spotify access token.");
+
 
                 //  Ieškoti dainų naudojant token
                 _httpClient.DefaultRequestHeaders.Clear();
@@ -50,13 +53,23 @@ namespace MyApi.Services
                 }
                 else
                 {
-                    return (false, $"Spotify API returned status code: {response.StatusCode}", null);
+                    throw new SpotifyServiceException($"Spotify API returned status code: {response.StatusCode}");
                 }
+
+            }
+            catch (SpotifyServiceException ex)
+            {
+                // Log to file (arba naudok ILogger)
+                File.AppendAllText("logs.txt", $"{DateTime.Now}: {ex.Message}\n");
+                return (false, ex.Message, null);
             }
             catch (Exception ex)
             {
-                return (false, $"Search failed: {ex.Message}", null);
+                // Fallback — visos kitos netikėtos klaidos
+                File.AppendAllText("logs.txt", $"{DateTime.Now}: Unexpected error: {ex.Message}\n");
+                return (false, $"Unexpected error: {ex.Message}", null);
             }
+
         }
 
         // Helper metodas: gauti Spotify access token
