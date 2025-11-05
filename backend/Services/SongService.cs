@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
+using MyApi.Interfaces;
 
 namespace MyApi.Services
 {
-    public class SongService
+    public class SongService : ISongService
     {
         private readonly PlaylistAppContext _context;
 
@@ -107,35 +108,34 @@ namespace MyApi.Services
         }
 
         // Gauti visas dainas
+        // grazins SongDto sarasagli
         public IEnumerable<SongDto> GetAllSongs()
         {
-            // Užkrauti dainas (su atlikėjais) į atmintį
+            // paimu songs is db kartu su susijusiais atlikejais
+            // AsNoTracking - nes neplanuoju keisti siu irasu
             var entities = _context.Songs
                 .Include(s => s.Artists)
                 .AsNoTracking()
                 .ToList();
 
-            // Rūšiuoti jei reikia
-            entities.Sort();
-
-            // Konvertuoti į DTO
-            var songs = entities.Select(s => new SongDto
+            // converter song -> songDto
+            var converter = new GenericConverter<Song, SongDto>();
+            var songDtos = converter.ConvertAll(entities, s => new SongDto
             {
                 Id = s.Id,
                 Title = s.Title,
                 Album = s.Album,
-                DurationFormatted = s.DurationSeconds.HasValue
-                    ? new Duration(s.DurationSeconds.Value).ToString()
-                    : null,
+                DurationFormatted = s.DurationSeconds?.ToString(),
                 Artists = s.Artists.Select(a => new ArtistDto
                 {
                     Id = a.Id,
                     Name = a.Name
                 }).ToList()
-            }).ToList();
+            });
 
-            return songs;
+            return songDtos;
         }
+
 
         // Gauti dainą pagal ID
         public SongDto? GetSongById(int id)

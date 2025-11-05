@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
+using MyApi.Interfaces;
 
 namespace MyApi.Services
 {
@@ -9,7 +10,7 @@ namespace MyApi.Services
     /// Servisas atsakingas už visą logiką, susijusią su grojarąščiais (playlists).
     /// Controlleriai tik kviečia šiuos metodus – čia vyksta DB užklausos, validacijos ir DTO mapping.
     /// </summary>
-    public class PlaylistService
+    public class PlaylistService : IPlaylistService
     {
         private readonly PlaylistAppContext _context;
 

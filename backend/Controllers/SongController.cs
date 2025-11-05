@@ -1,19 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using MyApi.Dtos;
 using MyApi.Services;
+using MyApi.Interfaces;
 
 namespace MyApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SongsController : ControllerBase
+    public class SongController : ControllerBase
     {
-        private readonly SongService _songService;
+        private readonly ISongService _songService;
 
         // dependency injection
         // nereikia kurti new SongService()
         // konstruktorius
-        public SongsController(SongService songService)
+        public SongController(ISongService songService)
         {
             _songService = songService;
         }

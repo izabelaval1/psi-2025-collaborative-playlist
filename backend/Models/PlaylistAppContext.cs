@@ -6,9 +6,9 @@ namespace MyApi.Models;
 
 public partial class PlaylistAppContext : DbContext
 {
-    public PlaylistAppContext()
-    {
-    }
+    //public PlaylistAppContext()
+    //{
+    //}
 
         public PlaylistAppContext(DbContextOptions<PlaylistAppContext> options)
             : base(options)

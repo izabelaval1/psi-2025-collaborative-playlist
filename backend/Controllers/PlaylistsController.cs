@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyApi.Dtos;
 using MyApi.Services;
+using MyApi.Interfaces;
 
 namespace MyApi.Controllers
 {
@@ -8,9 +9,9 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class PlaylistsController : ControllerBase
     {
-        private readonly PlaylistService _playlistService;
+        private readonly IPlaylistService _playlistService;
 
-        public PlaylistsController(PlaylistService playlistService)
+        public PlaylistsController(IPlaylistService playlistService)
         {
             _playlistService = playlistService;
         }

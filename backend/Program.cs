@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MyApi.Interfaces;
 using MyApi.Models;
 using MyApi.Services; // 👈 reikalinga, kad pasiektų tavo servisus (PlaylistService, SongService, SpotifyService)
 
@@ -20,9 +21,9 @@ builder.Services.AddDbContext<PlaylistAppContext>(options =>
 //  Servisų registravimas (Dependency Injection)
 // ===================================================
 // Kiekvienas servisų instance bus sukurtas per užklausą (Scoped)
-builder.Services.AddScoped<PlaylistService>();
-builder.Services.AddScoped<SongService>();
-builder.Services.AddScoped<SpotifyService>();
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<ISongService, SongService>();
+builder.Services.AddScoped<ISpotifyService, SpotifyService>();
 
 // ===================================================
 //  CORS — leidžiam frontend'ui jungtis prie API
