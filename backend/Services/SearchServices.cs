@@ -89,6 +89,8 @@ namespace MyApi.Services
         {
             try
             {
+                //using - užtikrina, kad HttpClient bus tinkamai išvalytas po naudojimo
+                // didesniuose projektuose galima naudot dependency injection HttpClient
                 using var client = new HttpClient();
 
                 // Užkoduoti credentials
