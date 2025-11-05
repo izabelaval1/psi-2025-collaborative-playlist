@@ -10,6 +10,7 @@ namespace MyApi.Exceptions
         {
         }
 
+        // ar reikia inner exception?
         public SpotifyServiceException(string message, Exception innerException)
             : base(message, innerException)
         {

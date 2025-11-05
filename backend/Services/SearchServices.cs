@@ -46,9 +46,21 @@ namespace MyApi.Services
                 var response = await _httpClient.GetAsync(searchUrl);
 
                 // Grąžinti rezultatą
-                if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode) // jei Spotify API atsakymas sekmingas (HTTP kodas 200-299)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
+                    // Nuskaitom Spotify atsakymą kaip srautą (stream)
+                    // response.Content - objektas kuriame saugomas Spotify ats
+                    // ReadAsStreamAsync() - asinchroninis metodas, kuris nuskaito turinį kaip srautą
+                    // await using - užtikrina, kad stream bus tinkamai uždarytas po naudojimo
+                    await using var stream = await response.Content.ReadAsStreamAsync();
+
+                    // Naudojam StreamReader, kad paverstume stream i teksta
+                    // StreamReader - klase skirta skaityti teksta iš srauto, gauna baitus ir paverčia juos į string
+                    using var reader = new StreamReader(stream);
+                    // nuskaitom visą tekstą iš stream  ir grazinam string su ReadToEndAsync()
+                    var json = await reader.ReadToEndAsync();
+
+                    // asinchroninis metodas grąžina tuple su sekmės būsena, klaidos žinute (jei yra) ir JSON rezultatu
                     return (true, null, json);
                 }
                 else
@@ -59,13 +71,13 @@ namespace MyApi.Services
             }
             catch (SpotifyServiceException ex)
             {
-                // Log to file (arba naudok ILogger)
+                // Log to file
                 File.AppendAllText("logs.txt", $"{DateTime.Now}: {ex.Message}\n");
                 return (false, ex.Message, null);
             }
             catch (Exception ex)
             {
-                // Fallback — visos kitos netikėtos klaidos
+                // visos kitos netikėtos klaidos
                 File.AppendAllText("logs.txt", $"{DateTime.Now}: Unexpected error: {ex.Message}\n");
                 return (false, $"Unexpected error: {ex.Message}", null);
             }
