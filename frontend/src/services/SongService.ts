@@ -20,7 +20,7 @@ export const songService = {
       Album: track.album.name,
       Url: track.external_urls.spotify,
     };
-    const res = await fetch(`${BASE_URL}/songs/add-to-playlist`, {
+    const res = await fetch(`${BASE_URL}/Song/add-to-playlist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(songData),
