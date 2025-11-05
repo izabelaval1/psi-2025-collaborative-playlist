@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import type { Playlist } from "../types/Playlist";
-import { playlistService } from "../services/PlaylistService";
+import { PlaylistService } from "../services/PlaylistService";
 
 export function usePlaylists() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -14,7 +14,7 @@ export function usePlaylists() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await playlistService.getAll();
+        const data = await PlaylistService.getAll();
         setPlaylists(data);
       } catch (err: any) {
         setError(err.message);
@@ -27,7 +27,7 @@ export function usePlaylists() {
 
   // Add playlist
   const addPlaylist = async (data: { name: string; description?: string; hostId: number }) => {
-    const created = await playlistService.create(data);
+    const created = await PlaylistService.create(data);
     setPlaylists(prev => [...prev, created]);
   };
 
@@ -39,7 +39,7 @@ export function usePlaylists() {
 
   // Update playlist
   const updatePlaylist = async (id: number, updates: Partial<Playlist>) => {
-    const updated = await playlistService.update(id, updates);
+    const updated = await PlaylistService.update(id, updates);
     setPlaylists(prev => prev.map(p => (p.id === id ? updated : p)));
   };
 
