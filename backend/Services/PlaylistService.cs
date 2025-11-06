@@ -35,8 +35,9 @@ namespace MyApi.Services
                 .AsNoTracking()
                 .ToList();  // Execute query and bring to memory
 
+            var converter = new GenericConverter<Playlist, PlaylistResponseDto>();
             // Tada konvertuojame į DTO atmintyje
-            return playlists.Select(p => new PlaylistResponseDto
+            var playlistDtos = converter.ConvertAll(playlists, p => new PlaylistResponseDto
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -78,6 +79,8 @@ namespace MyApi.Services
                     Role = u.Role
                 }).ToList()
             }).ToList();
+
+            return playlistDtos;
         }
 
         // ============================================================
@@ -99,19 +102,23 @@ namespace MyApi.Services
             if (playlist == null)
                 return null;
 
+            var converter = new GenericConverter<Playlist, PlaylistResponseDto>();
+
             //  Tada konvertuojame į DTO atmintyje
-            return new PlaylistResponseDto
+            var dto = converter.ConvertOne(playlist, playlist => new PlaylistResponseDto
             {
                 Id = playlist.Id,
                 Name = playlist.Name,
                 Description = playlist.Description,
                 HostId = playlist.HostId,
+
                 Host = playlist.Host != null ? new UserDto
                 {
                     Id = playlist.Host.Id,
                     Username = playlist.Host.Username,
                     Role = playlist.Host.Role
                 } : null,
+
                 Songs = playlist.PlaylistSongs
                     .OrderBy(ps => ps.Position)
                     .Select(ps => new SongDto
@@ -129,13 +136,17 @@ namespace MyApi.Services
                             Name = a.Name
                         }).ToList()
                     }).ToList(),
+
                 Collaborators = playlist.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
                     Role = u.Role
                 }).ToList()
-            };
+            }
+            );
+
+            return dto;
         }
 
         // ============================================================

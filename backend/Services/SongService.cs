@@ -140,27 +140,34 @@ namespace MyApi.Services
         // Gauti dainą pagal ID
         public SongDto? GetSongById(int id)
         {
+            // paimu songs is db kartu su susijusiais atlikejais
+            // AsNoTracking - nes neplanuoju keisti siu irasu
             var song = _context.Songs
                 .Include(s => s.Artists)
                 .AsNoTracking()
-                .Where(s => s.Id == id)
-                .Select(s => new SongDto
-                {
-                    Id = s.Id,
-                    Title = s.Title,
-                    Album = s.Album,
-                    DurationFormatted = s.DurationSeconds.HasValue
+                .FirstOrDefault(s => s.Id == id);
+
+            if (song == null)
+                return null;    
+
+            var converter = new GenericConverter<Song, SongDto>();
+
+            var dto = converter.ConvertOne(song, s => new SongDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Album = s.Album,
+                DurationFormatted = s.DurationSeconds.HasValue
                         ? new Duration(s.DurationSeconds.Value).ToString()
                         : null,
-                    Artists = s.Artists.Select(a => new ArtistDto
-                    {
-                        Id = a.Id,
-                        Name = a.Name
-                    }).ToList()
-                })
-                .FirstOrDefault();
+                Artists = s.Artists.Select(a => new ArtistDto
+                {
+                    Id = a.Id,
+                    Name = a.Name
+                }).ToList()
+            });
 
-            return song;
+            return dto;
         }
 
         // Ištrinti dainą pagal ID
