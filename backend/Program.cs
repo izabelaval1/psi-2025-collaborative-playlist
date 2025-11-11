@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using MyApi.Interfaces;
 using MyApi.Models;
-using MyApi.Services; // 👈 reikalinga, kad pasiektų tavo servisus (PlaylistService, SongService, SpotifyService)
+using MyApi.Data;
+using MyApi.Services; //  reikalinga, kad pasiektų tavo servisus (PlaylistService, SongService, SpotifyService)
+using Microsoft.AspNetCore.Authetication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args); // 🚀 Programos paleidimo taškas
 
@@ -24,6 +28,8 @@ builder.Services.AddDbContext<PlaylistAppContext>(options =>
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<ISongService, SongService>();
 builder.Services.AddScoped<ISpotifyService, SpotifyService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); // login
+builder.Services.AddScoped<IUserService, UserService>(); //login
 
 // ===================================================
 //  CORS — leidžiam frontend'ui jungtis prie API
@@ -49,6 +55,26 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+// JWT
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
+
 // ===================================================
 //  Sukuriam WebApplication objektą
 // ===================================================
@@ -67,6 +93,7 @@ app.UseRouting();
 app.UseCors(); // leidžia frontend’ui pasiekti API
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers(); // susieja visus controllerius automatiškai
 

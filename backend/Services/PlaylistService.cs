@@ -3,6 +3,7 @@ using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
 using MyApi.Interfaces;
+using MyApi.Data;
 
 namespace MyApi.Services
 {
@@ -200,6 +201,7 @@ namespace MyApi.Services
 
             if (updatedPlaylist.SongIds != null)
             {
+                // remove existing songs
                 var existingSongs = existing.PlaylistSongs.ToList();
                 foreach (var ps in existingSongs)
                     _context.PlaylistSongs.Remove(ps);
@@ -208,16 +210,27 @@ namespace MyApi.Services
                 foreach (var songId in updatedPlaylist.SongIds)
                 {
                     var dbSong = _context.Songs.FirstOrDefault(s => s.Id == songId);
-                    if (dbSong != null)
-                    {
-                        _context.PlaylistSongs.Add(new PlaylistSong
+                        if (dbSong != null)
                         {
-                            PlaylistId = existing.Id,
-                            SongId = dbSong.Id,
-                            Position = position++
-                        });
+                            _context.PlaylistSongs.Add(new PlaylistSong
+                            {
+                                PlaylistId = existing.Id,
+                                SongId = dbSong.Id,
+                                Position = position++
+                            });
+                        }
                     }
-                }
+
+
+                    // var addResult = SongService.AddSongToPlaylist(new AddSongToPlaylistDto
+                    // {
+                    //     PlaylistId = existing.Id,
+                    //     Title = songId.Title,
+                    //     Album = AddSongToPlaylistDto.Album,
+                    //     Duration = AddSongToPlaylistDto.DurationMs,
+                    //     ArtistNames = AddSongToPlaylistDto.ArtistNames,
+
+                    // });
             }
 
             _context.SaveChanges();

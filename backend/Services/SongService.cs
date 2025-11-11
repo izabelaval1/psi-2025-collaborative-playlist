@@ -3,6 +3,7 @@ using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
 using MyApi.Interfaces;
+using MyApi.Data;
 
 namespace MyApi.Services
 {
@@ -125,7 +126,12 @@ namespace MyApi.Services
                 Id = s.Id,
                 Title = s.Title,
                 Album = s.Album,
-                DurationFormatted = s.DurationSeconds?.ToString(),
+                DurationMs = s.DurationSeconds.HasValue
+                    ? s.DurationSeconds.Value * 1000
+                    : null,
+                DurationFormatted = s.DurationSeconds.HasValue
+                    ? new Duration(s.DurationSeconds.Value).ToString()
+                    : null,
                 Artists = s.Artists.Select(a => new ArtistDto
                 {
                     Id = a.Id,
@@ -157,6 +163,10 @@ namespace MyApi.Services
                 Id = s.Id,
                 Title = s.Title,
                 Album = s.Album,
+                DurationMs = s.DurationSeconds.HasValue
+                    ? s.DurationSeconds.Value * 1000
+                    : null,
+                
                 DurationFormatted = s.DurationSeconds.HasValue
                         ? new Duration(s.DurationSeconds.Value).ToString()
                         : null,
