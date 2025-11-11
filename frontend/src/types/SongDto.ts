@@ -5,6 +5,7 @@ export interface SongDto {
   title: string;
   album?: string;
   duration?: number;
+  durationFormatted?: string;
   position?: number;
   artists: ArtistDto[];
 }

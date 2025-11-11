@@ -135,7 +135,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
                   {song.album || "—"}
                 </td>
                 <td data-testid={`playlist-display-song-duration-${song.id}`}>
-                  {formatDuration(song.duration)}
+                  {song.durationFormatted || formatDuration(song.duration)}
                 </td>
                 <td data-testid="trash">
                   <button

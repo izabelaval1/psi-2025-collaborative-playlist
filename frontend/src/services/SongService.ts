@@ -19,6 +19,7 @@ export const songService = {
       Artist: track.artists.map((a) => a.name).join(", "),
       Album: track.album.name,
       Url: track.external_urls.spotify,
+      DurationMs: track.duration_ms,
     };
     const res = await fetch(`${BASE_URL}/Song/add-to-playlist`, {
       method: "POST",
