@@ -1,7 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using MyApi.Data;
 using MyApi.Dtos;
-using MyApi.Interfaces;
 using MyApi.Models;
 using MyApi.Utils;
 using MyApi.Repositories; // aptrinti usings

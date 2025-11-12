@@ -4,6 +4,6 @@ namespace MyApi.Dtos
     {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        public int? HostId { get; set; }
+        public int HostId { get; set; }
     }
 }

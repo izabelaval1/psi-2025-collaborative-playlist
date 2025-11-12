@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using MyApi.Data;
-using MyApi.Interfaces;
 using MyApi.Models;
 
 namespace MyApi.Repositories
@@ -22,6 +21,18 @@ namespace MyApi.Repositories
         public async Task<User?> GetByIdAsync(int id)
         {
             return await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        // NEW:
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        // NEW:
+        public async Task<bool> ExistsByUsernameAsync(string username)
+        {
+            return await _db.Users.AnyAsync(u => u.Username == username);
         }
 
         public async Task AddAsync(User user)

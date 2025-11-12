@@ -1,7 +1,7 @@
 using MyApi.Dtos;
 using MyApi.Models;
 
-namespace MyApi.Interfaces
+namespace MyApi.Services
 {
     public interface IUserService
     {
