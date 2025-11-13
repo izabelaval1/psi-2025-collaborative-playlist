@@ -1,6 +1,6 @@
 //handles Spotify search and adding songs to a playlist.
 
-import type { Track, SpotifyResponse } from "../types/Spotify";
+import type { Track} from "../types/Spotify";
 
 
 // SongService.ts
@@ -27,7 +27,7 @@ export const songService = {
     };
 
     // Jei projekte aktyvus SongsController (plural), pakeisk į /Songs/add-to-playlist
-    const res = await fetch(`${BASE_URL}/Song/add-to-playlist`, {
+    const res = await fetch(`${BASE_URL}/song/add-to-playlist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(songData),

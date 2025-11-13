@@ -1,5 +1,3 @@
-using MyApi.Dtos;
-
 namespace MyApi.Services
 {
     public interface IAuthService

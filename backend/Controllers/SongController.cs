@@ -5,11 +5,11 @@ using MyApi.Services;
 namespace MyApi.Controllers
 {
     [ApiController]
-    [Route("api/Song")]
-    public class SongsController : ControllerBase
+    [Route("api/song")]
+    public class SongController : ControllerBase
     {
         private readonly ISongService _songService;
-        public SongsController(ISongService songService) => _songService = songService;
+        public SongController(ISongService songService) => _songService = songService;
 
         // POST /api/songs/add-to-playlist
         [HttpPost("add-to-playlist")]

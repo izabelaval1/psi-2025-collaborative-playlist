@@ -1,5 +1,3 @@
-using System;
-
 namespace MyApi.Models
 {
     public struct Duration

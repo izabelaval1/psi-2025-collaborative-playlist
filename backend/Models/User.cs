@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace MyApi.Models;
+﻿namespace MyApi.Models;
 
 public partial class User
 {
