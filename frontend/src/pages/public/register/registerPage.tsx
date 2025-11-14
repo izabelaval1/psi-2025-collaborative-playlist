@@ -46,7 +46,7 @@ const RegisterPage = () => {
 
     try {
       setMessage("Registering...");
-      await axios.post("https://localhost:5000/api/users/register", {
+      await axios.post("http://localhost:5000/api/auth/register", {
         username: values.username,
         email: values.email, 
         password: values.password,

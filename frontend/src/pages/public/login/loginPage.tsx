@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import axios from "axios";
 import styles from "./LoginPage.module.css";
+import { useNavigate } from "react-router-dom";
+
 
 const LoginPage = () => {
   const [values, setValues] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState<any>({});
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -16,7 +20,7 @@ const LoginPage = () => {
   };
 
   const validate = () => {
-    const newErrors: any = {};
+    const newErrors: any = {}
     if (!values.username.trim()) newErrors.username = "Username is required.";
     if (!values.password) newErrors.password = "Password is required.";
     return newErrors;
@@ -24,6 +28,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
 
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -33,14 +38,13 @@ const LoginPage = () => {
 
     try {
       setMessage("Logging in...");
-      const res = await axios.post("https://localhost:5000/api/users/login", {
-        username: values.username,
-        password: values.password,
+      const res = await axios.post("http://localhost:5000/api/auth/login", { 
       });
       localStorage.setItem("token", res.data.token);
       setMessage("Logged in successfully!");
+      navigate("/main");
     } catch (err: any) {
-      setMessage("");
+      setMessage(""); 
       setErrors({ general: err.response?.data?.message || "Login failed" });
     }
   };
@@ -77,7 +81,7 @@ const LoginPage = () => {
 
           <button className={styles.signInBtn} type="submit">
             <LogIn className={styles.icon} strokeWidth={2} size={18} />
-            Sign In
+            Log In
           </button>
         </form>
 
