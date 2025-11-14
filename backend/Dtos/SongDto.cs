@@ -5,8 +5,6 @@ namespace MyApi.Dtos
         public int Id { get; set; }
         public string Title { get; set; } = null!;
         public string? Album { get; set; }
-
-        //  Add this
         public int? DurationMs { get; set; }
         public string? DurationFormatted { get; set; }
 
