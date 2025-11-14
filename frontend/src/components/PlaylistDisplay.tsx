@@ -108,8 +108,8 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
               data-testid="playlist-display-table-header"
             >
               <th>#</th>
-              <th className="px-4">Title</th>
-              <th className="px-4">Artist(s)</th>
+              <th className="px-2">Title</th>
+              <th className="px-2">Artist(s)</th>
               <th className="px-4">Album</th>
               <th className="px-2">Duration</th>
               <th className="px-2">Delete</th>
@@ -128,7 +128,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
                 <td className="px-2" data-testid={`playlist-display-song-title-${song.id}`}>
                   {song.title}
                 </td>
-                <td data-testid={`playlist-display-song-artists-${song.id}`}>
+                <td className="px-4" data-testid={`playlist-display-song-artists-${song.id}`}>
                   {song.artists.map((a) => a.name).join(", ")}
                 </td>
                 <td data-testid={`playlist-display-song-album-${song.id}`}>
