@@ -144,7 +144,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
                     🗑️
                   </button>
 
-                  {/* how tf and where tf do i change the style */}
+                  {/* how and where do i change the style */}
                 </td>
               </tr>
             ))}
