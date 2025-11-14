@@ -17,7 +17,7 @@ namespace MyApi.Services
 
         public async Task<(bool Success, string? Error, LoginResponseDto? Result)> RegisterAsync(RegisterUserDto dto)
         {
-            var username = dto.Username?.Trim() ?? string.Empty;
+            var username = dto.Username?.Trim() ?? string.Empty;  //ncrash'ina ant null reiksmiu
             var password = dto.Password ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
