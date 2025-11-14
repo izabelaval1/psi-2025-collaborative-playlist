@@ -108,11 +108,11 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
               data-testid="playlist-display-table-header"
             >
               <th>#</th>
-              <th>Title</th>
-              <th>Artist(s)</th>
-              <th>Album</th>
-              <th>Duration</th>
-              <th>TRASHHHH</th>
+              <th className="px-4">Title</th>
+              <th className="px-4">Artist(s)</th>
+              <th className="px-4">Album</th>
+              <th className="px-2">Duration</th>
+              <th className="px-2">Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -125,7 +125,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
                 <td data-testid={`playlist-display-song-index-${song.id}`}>
                   {index + 1}
                 </td>
-                <td data-testid={`playlist-display-song-title-${song.id}`}>
+                <td className="px-2" data-testid={`playlist-display-song-title-${song.id}`}>
                   {song.title}
                 </td>
                 <td data-testid={`playlist-display-song-artists-${song.id}`}>
@@ -134,10 +134,10 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
                 <td data-testid={`playlist-display-song-album-${song.id}`}>
                   {song.album || "—"}
                 </td>
-                <td data-testid={`playlist-display-song-duration-${song.id}`}>
+                <td className="px-4" data-testid={`playlist-display-song-duration-${song.id}`}>
                   {song.durationFormatted || formatDuration(song.duration)}
                 </td>
-                <td data-testid="trash">
+                <td className="px-3" data-testid="trash">
                   <button
                     onClick={() => removeFromPlaylist(playlist.id, song.id)}
                   >
