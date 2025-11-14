@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using MyApi.Interfaces;
-using MyApi.Models;
-using MyApi.Services; // 👈 reikalinga, kad pasiektų tavo servisus (PlaylistService, SongService, SpotifyService)
+using MyApi.Repositories;
+using MyApi.Data;
+using MyApi.Services; 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
-var builder = WebApplication.CreateBuilder(args); // 🚀 Programos paleidimo taškas
+var builder = WebApplication.CreateBuilder(args);
 
 // ===================================================
 //  HttpClient — naudojamas Spotify API paieškai
@@ -20,10 +23,16 @@ builder.Services.AddDbContext<PlaylistAppContext>(options =>
 // ===================================================
 //  Servisų registravimas (Dependency Injection)
 // ===================================================
-// Kiekvienas servisų instance bus sukurtas per užklausą (Scoped)
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<ISongService, SongService>();
 builder.Services.AddScoped<ISpotifyService, SpotifyService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+builder.Services.AddScoped<ISongRepository, SongRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // ===================================================
 //  CORS — leidžiam frontend'ui jungtis prie API
@@ -34,20 +43,44 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173") 
               .AllowAnyHeader()
-              .AllowAnyMethod(); // GET, POST, PUT, DELETE
+              .AllowAnyMethod();
     });
 });
 
 // ===================================================
 // Controllers + JSON nustatymai
 // ===================================================
-// Kad nebūtų ciklinių nuorodų (pvz. Playlist -> Songs -> Playlist)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
+
+// ===================================================
+// JWT Authentication
+// ===================================================
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "YourAppName";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "YourAppName";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,              // <-- NAUDOJAME KINTAMUOSIUS
+            ValidAudience = jwtAudience,          // <-- NAUDOJAME KINTAMUOSIUS
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))  // <-- NAUDOJAME KINTAMUOSIUS
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // ===================================================
 //  Sukuriam WebApplication objektą
@@ -63,12 +96,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
-app.UseCors(); // leidžia frontend’ui pasiekti API
-
+app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers(); // susieja visus controllerius automatiškai
+app.MapControllers();
 
 // ===================================================
 // Paleidžiam programą

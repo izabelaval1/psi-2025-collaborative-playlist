@@ -5,7 +5,7 @@ import "./styles/App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import MainPage from "./pages/protected/main/MainPage";
-import LandingPage from "./pages/public/landing/LandingPage";
+import LandingPage from "./pages/public/landing/landingPage";
 import LoginPage from "./pages/public/login/loginPage";
 import RegisterPage from "./pages/public/register/registerPage";
 

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using MyApi.Models;
 
-namespace MyApi.Models;
+namespace MyApi.Data;
 
 public partial class PlaylistAppContext : DbContext
 {
-    //public PlaylistAppContext()
-    //{
-    //}
-
         public PlaylistAppContext(DbContextOptions<PlaylistAppContext> options)
             : base(options)
         {

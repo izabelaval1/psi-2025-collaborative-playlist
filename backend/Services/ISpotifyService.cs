@@ -1,4 +1,4 @@
-namespace MyApi.Interfaces
+namespace MyApi.Services
 {
     public interface ISpotifyService
     {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema; // [NotMapped]
+﻿using System.ComponentModel.DataAnnotations.Schema; // [NotMapped]
 
 namespace MyApi.Models;
 

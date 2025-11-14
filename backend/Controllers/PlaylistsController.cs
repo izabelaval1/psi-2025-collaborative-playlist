@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MyApi.Dtos;
 using MyApi.Services;
-using MyApi.Interfaces;
 
 namespace MyApi.Controllers
 {
@@ -16,19 +15,17 @@ namespace MyApi.Controllers
             _playlistService = playlistService;
         }
 
-        // GET /api/playlists -> grąžinti visas playlists
         [HttpGet]
-        public IActionResult GetPlaylists()
+        public async Task<IActionResult> GetPlaylists()
         {
-            var playlists = _playlistService.GetAllPlaylists();
+            var playlists = await _playlistService.GetAllAsync();
             return Ok(playlists);
         }
 
-        // GET /api/playlists/{id} -> grąžinti playlist pagal ID
         [HttpGet("{id:int}")]
-        public IActionResult GetPlaylistById(int id)
+        public async Task<IActionResult> GetPlaylistById(int id)
         {
-            var playlist = _playlistService.GetPlaylistById(id);
+            var playlist = await _playlistService.GetByIdAsync(id);
 
             if (playlist == null)
                 return NotFound($"Playlist with ID {id} not found.");
@@ -36,11 +33,10 @@ namespace MyApi.Controllers
             return Ok(playlist);
         }
 
-        // POST /api/playlists -> sukurti naują playlist
         [HttpPost]
-        public IActionResult CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
+        public async Task<IActionResult> CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
         {
-            var (success, error, created) = _playlistService.CreatePlaylist(newPlaylist);
+            var (success, error, created) = await _playlistService.CreateAsync(newPlaylist);
 
             if (!success)
                 return BadRequest(error);
@@ -48,12 +44,10 @@ namespace MyApi.Controllers
             return CreatedAtAction(nameof(GetPlaylistById), new { id = created!.Id }, created);
         }
 
-        // PUT /api/playlists/by-id/{id} -> pilnas atnaujinimas pagal ID
         [HttpPut("by-id/{id:int}")]
-        // [FromBody] - nurodo, kad duomenys bus paimti iš užklausos kūno ir paildyti į PlaylistUpdateDto objektą
-        public IActionResult UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
+        public async Task<IActionResult> UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
         {
-            var (success, error, updated) = _playlistService.UpdatePlaylistById(id, updatedPlaylist);
+            var (success, error, updated) = await _playlistService.UpdateByIdAsync(id, updatedPlaylist);
 
             if (!success)
             {
@@ -67,12 +61,10 @@ namespace MyApi.Controllers
             return Ok(updated);
         }
 
-        // PATCH /api/playlists/{id} -> dalinis atnaujinimas
         [HttpPatch("{id:int}")]
-        // grazina http atsakyma
-        public IActionResult EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
+        public async Task<IActionResult> EditPlaylist(int id, [FromBody] PlaylistPatchDto editedPlaylist)
         {
-            var (success, error, updated) = _playlistService.EditPlaylist(id, editedPlaylist);
+            var (success, error, updated) = await _playlistService.EditAsync(id, editedPlaylist);
 
             if (!success)
             {
@@ -86,11 +78,10 @@ namespace MyApi.Controllers
             return Ok(updated);
         }
 
-        // DELETE /api/playlists/{id} -> ištrinti playlist pagal ID
         [HttpDelete("{id:int}")]
-        public IActionResult DeletePlaylistById(int id)
+        public async Task<IActionResult> DeletePlaylistById(int id)
         {
-            var (success, error) = _playlistService.DeletePlaylist(id);
+            var (success, error) = await _playlistService.DeleteAsync(id);
 
             if (!success)
             {
@@ -105,9 +96,9 @@ namespace MyApi.Controllers
         }
 
         [HttpDelete("{playlistId:int}/song/{songId:int}")]
-        public IActionResult RemoveSongFromPlaylist(int playlistId, int songId)
+        public async Task<IActionResult> RemoveSongFromPlaylist(int playlistId, int songId)
         {
-            var (success, error) = _playlistService.RemoveSongFromPlaylist(playlistId, songId);
+            var (success, error) = await _playlistService.RemoveSongFromPlaylistAsync(playlistId, songId);
 
             if (!success)
             {
@@ -118,6 +109,5 @@ namespace MyApi.Controllers
 
             return Ok(new { message = "Song removed from playlist successfully" });
         }
-
     }
 }

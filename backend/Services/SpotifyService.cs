@@ -1,9 +1,6 @@
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using MyApi.Exceptions;
-using MyApi.Interfaces;
 
 namespace MyApi.Services
 {

@@ -15,6 +15,7 @@ export interface Track {
   artists: Artist[];
   album: Album;
   external_urls: { spotify: string };
+  duration_ms: number;
 }
 
 export interface Song {
@@ -25,7 +26,7 @@ export interface Song {
 }
 
 export interface SpotifyResponse {
-  tracks: {
+  tracks?: {
     items: Track[];
   };
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace MyApi.Models;
+﻿namespace MyApi.Models;
 
 public partial class Playlist
 {
