@@ -105,3 +105,4 @@ app.MapControllers();
 // Paleidžiam programą
 // ===================================================
 app.Run();
+public partial class Program { }
