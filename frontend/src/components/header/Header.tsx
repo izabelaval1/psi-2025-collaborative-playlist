@@ -16,7 +16,7 @@ export default function Header({ isAuthenticated, username, onLogout }: HeaderPr
   ];
 
   const privateLinks = [
-    { to: "/", label: "Home" },
+    { to: "/main", label: "Home" },
     { to: "/mysets", label: "My Library" },
     { to: "/settings", label: "Settings" },
   ];

@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import axios from "axios";
 import styles from "./LoginPage.module.css";
 import { useNavigate } from "react-router-dom";
-
+import { authService } from "../../../services/authService";
 
 const LoginPage = () => {
   const [values, setValues] = useState({ username: "", password: "" });
@@ -38,9 +37,8 @@ const LoginPage = () => {
 
     try {
       setMessage("Logging in...");
-      const res = await axios.post("http://localhost:5000/api/auth/login", { 
-      });
-      localStorage.setItem("token", res.data.token);
+      await authService.login(values.username, values.password);
+
       setMessage("Logged in successfully!");
       navigate("/main");
     } catch (err: any) {
