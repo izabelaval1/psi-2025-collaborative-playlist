@@ -23,8 +23,8 @@ const RegisterPage = () => {
   const validate = () => {
     const newErrors: any = {};
     if (!values.username.trim()) 
-      newErrors.username = "Username is required.";  // ✅ PATAISYTA
-    if (!values.password || values.password.length < 8)  // ✅ Pakeista į 8
+      newErrors.username = "Username is required.";  
+    if (!values.password || values.password.length < 8)  
       newErrors.password = "Password must be at least 8 characters.";
     if (values.password !== values.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match.";
@@ -48,9 +48,7 @@ const RegisterPage = () => {
       navigate("/main");  // redirect į main
     } catch (err: any) {
       setMessage("");
-      setErrors({ 
-        general: err.response?.data?.error || "Registration failed" 
-      });
+      setErrors({ general: err.response?.data?.message || "Registration failed" });
     }
   };
 
@@ -93,8 +91,8 @@ const RegisterPage = () => {
               onChange={handleChange}
               placeholder="Confirm your password"
             />
-            {errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
-          </div>
+            {errors.password && <p className={styles.error}>{errors.password}</p>}
+            </div>
 
           <button className={styles.signInBtn} type="submit">
             <UserPlus className={styles.icon} size={18} />
