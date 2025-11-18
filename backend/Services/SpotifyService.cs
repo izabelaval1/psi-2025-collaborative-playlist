@@ -70,7 +70,6 @@ namespace MyApi.Services
             catch (SpotifyServiceException ex)
             {
                 // Log to file
-                File.AppendAllText("logs.txt", $"{DateTime.Now}: {ex.Message}\n");
                 return (false, ex.Message, null);
             }
             catch (Exception ex)

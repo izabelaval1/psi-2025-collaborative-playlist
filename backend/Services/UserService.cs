@@ -1,7 +1,8 @@
 using MyApi.Dtos;
 using MyApi.Models;
 using MyApi.Utils;
-using MyApi.Repositories; // aptrinti usings
+using MyApi.Repositories;
+using MyApi.Exceptions; // aptrinti usings
 
 namespace MyApi.Services
 {
@@ -28,14 +29,22 @@ namespace MyApi.Services
         public async Task<UserDto?> GetByIdAsync(int id)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) return null;
+            if (u == null) 
+            {
+                var ex = new UserNotFoundException(id);
+                return null;
+            }
             return _converter.ConvertOne(u, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role });
         }
 
         public async Task<(bool Success, string? Error)> DeleteAsync(int id)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) return (false, "Not found");
+            if (u == null) 
+            {
+                var ex = new UserNotFoundException(id);
+                return (false, ex.Message);
+            }
             await _userRepository.DeleteAsync(u);
             return (true, null);
         }
@@ -43,7 +52,11 @@ namespace MyApi.Services
         public async Task<(bool Success, string? Error)> ChangeRoleAsync(int id, UserRole newRole)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) return (false, "Not found");
+            if (u == null) 
+            {
+                var ex = new UserNotFoundException(id);
+                return (false, ex.Message);
+            }
 
             u.Role = newRole;
             await _userRepository.UpdateAsync(u);
