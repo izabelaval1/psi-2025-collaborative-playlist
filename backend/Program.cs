@@ -39,11 +39,12 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // ===================================================
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") 
+        policy.WithOrigins("http://localhost:5173") // React app URL
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -96,7 +97,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-app.UseCors();
+app.UseCors("AllowFrontend"); 
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

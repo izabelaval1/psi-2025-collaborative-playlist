@@ -12,7 +12,7 @@ namespace MyApi.Controllers
         private readonly IUserService _userservice; 
         public UsersController(IUserService users) => _userservice = users;
 
-        [Authorize]
+        [Authorize (Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

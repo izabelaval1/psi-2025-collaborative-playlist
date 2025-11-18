@@ -1,42 +1,38 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserPlus } from "lucide-react";
-import axios from "axios";
 import styles from "./registerPage.module.css";
+import { authService } from "../../../services/authService";
 
 const RegisterPage = () => {
   const [values, setValues] = useState({
     username: "",
-    email: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<any>({});
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  //updates form values as the user types.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //e.target.name → matches the input’s name attribute (username, email, etc.).
     const { name, value } = e.target;
-    //setValues → updates only the changed field while keeping others unchanged (...prev).
     setValues((prev) => ({ ...prev, [name]: value }));
     setErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
     const newErrors: any = {};
-    if (!values.username.trim()) newErrors.firstName = "Username is required.";
-    if (!values.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
-      newErrors.email = "Enter a valid email address.";
-    if (!values.password || values.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters.";
+    if (!values.username.trim()) 
+      newErrors.username = "Username is required.";  
+    if (!values.password || values.password.length < 8)  
+      newErrors.password = "Password must be at least 8 characters.";
     if (values.password !== values.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match.";
     return newErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); //e.preventDefault() → prevents the page from refreshing on submit (default browser behavior).
+    e.preventDefault();
 
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -46,14 +42,10 @@ const RegisterPage = () => {
 
     try {
       setMessage("Registering...");
-      await axios.post("http://localhost:5000/api/auth/register", {
-        username: values.username,
-        email: values.email, 
-        password: values.password,
-        role: "User",
-      });
+      await authService.register(values.username, values.password);
+
       setMessage("Account created successfully!");
-      setValues({ username: "", email: "", password: "", confirmPassword: "" });
+      navigate("/main");  // redirect į main
     } catch (err: any) {
       setMessage("");
       setErrors({ general: err.response?.data?.message || "Registration failed" });
@@ -67,26 +59,15 @@ const RegisterPage = () => {
         <p className={styles.text}>Start building collaborative playlists in seconds.</p>
 
         <form onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
-              <label>Username</label>
-              <input
-                name="username"
-                value={values.username}
-                onChange={handleChange}
-                placeholder="Enter your username"
-              />
-              {errors.username && <p className={styles.error}>{errors.username}</p>}
-            </div>
           <div className={styles.formGroup}>
-            <label>Email</label>
+            <label>Username</label>
             <input
-              name="email"
-              type="email"
-              value={values.email}
+              name="username"
+              value={values.username}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Enter your username"
             />
-            {errors.email && <p className={styles.error}>{errors.email}</p>}
+            {errors.username && <p className={styles.error}>{errors.username}</p>}
           </div>
 
           <div className={styles.formGroup}>
@@ -110,8 +91,8 @@ const RegisterPage = () => {
               onChange={handleChange}
               placeholder="Confirm your password"
             />
-            {errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
-          </div>
+            {errors.password && <p className={styles.error}>{errors.password}</p>}
+            </div>
 
           <button className={styles.signInBtn} type="submit">
             <UserPlus className={styles.icon} size={18} />

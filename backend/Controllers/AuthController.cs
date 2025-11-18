@@ -14,7 +14,8 @@ namespace MyApi.Controllers
         public async Task<IActionResult> Register(RegisterUserDto dto)
         {
             var (success, error, result) = await _authService.RegisterAsync(dto);
-            if (!success) return BadRequest(error);
+            if (!success)
+                return BadRequest(new { message = error });
             return Ok(result);
         }
 
@@ -22,7 +23,8 @@ namespace MyApi.Controllers
         public async Task<IActionResult> Login(LoginUserDto dto)
         {
             var (success, error, result) = await _authService.LoginAsync(dto);
-            if (!success) return Unauthorized(error);
+            if (!success)
+                return Unauthorized(new { message = error });
             return Ok(result);
         }
     }
