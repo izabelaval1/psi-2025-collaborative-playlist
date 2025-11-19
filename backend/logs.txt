@@ -1,0 +1,14 @@
+2025-11-04 18:39:21: Failed to get Spotify access token.
+2025-11-04 18:39:27: Failed to get Spotify access token.
+2025-11-04 18:39:27: Failed to get Spotify access token.
+2025-11-04 18:39:28: Failed to get Spotify access token.
+2025-11-04 18:39:29: Failed to get Spotify access token.
+2025-11-04 18:43:58: Failed to get Spotify access token.
+2025-11-04 18:44:42: Failed to get Spotify access token.
+2025-11-04 18:44:43: Failed to get Spotify access token.
+2025-11-04 18:45:05: Failed to get Spotify access token.
+2025-11-04 18:56:48: Failed to get Spotify access token.
+2025-11-04 18:57:31: Failed to get Spotify access token.
+2025-11-05 11:01:57: Failed to get Spotify access token.
+[SPOTIFY_ERROR] 2025-11-18 10:10:39 - Failed to get Spotify access token.
+[USER_EXISTS] 2025-11-18 10:11:40 - Username 'kakis' already exists | Username: kakis
