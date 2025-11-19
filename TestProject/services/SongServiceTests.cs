@@ -9,7 +9,6 @@ using System.Linq;
 
 namespace TestProject
 {
-    // This class contains all tests for the PlaylistService
     public class SongServiceTests
     {
 
@@ -44,7 +43,7 @@ namespace TestProject
 
             // --- ARRANGE ---
             var mockSongRepo = new Mock<ISongRepository>();
-            var mockPlaylistRepo = new Mock<IPlaylistRepository>(); // Still needed for constructor
+            var mockPlaylistRepo = new Mock<IPlaylistRepository>();
 
             var id = 42;
 
@@ -81,7 +80,7 @@ namespace TestProject
             var playlistId = 42;
             var songId = 10;
 
-            // ✅ Mock: Playlist EXISTS with the song ALREADY in it
+            // Mock: Playlist EXISTS with the song ALREADY in it
             mockPlaylistRepo.Setup(x => x.GetByIdWithDetailsAsync(playlistId))
                 .ReturnsAsync(new Playlist
                 {
@@ -92,7 +91,7 @@ namespace TestProject
                     Host = new User { Id = 1, Username = "host", Role = UserRole.Host, PasswordHash = "hash" },
                     PlaylistSongs = new List<PlaylistSong>
                     {
-                // ✅ Song is ALREADY in the playlist
+                // Song is ALREADY in the playlist
                 new PlaylistSong
                 {
                     PlaylistId = playlistId,
@@ -110,7 +109,7 @@ namespace TestProject
                     Users = new List<User>()
                 });
 
-            // ✅ Mock: EnsureSongWithArtistsAsync returns the existing song
+            // Mock: EnsureSongWithArtistsAsync returns the existing song
             mockSongRepo.Setup(x => x.EnsureSongWithArtistsAsync(
                     It.IsAny<string>(),  // title
                     It.IsAny<string>(),  // album
@@ -119,7 +118,7 @@ namespace TestProject
                 ))
                 .ReturnsAsync(new Song
                 {
-                    Id = songId,  // ✅ Same ID as the song already in playlist
+                    Id = songId,  // Same ID as the song already in playlist
                     Title = "Existing Song",
                     Album = "Album",
                     Artists = new List<Artist>()
@@ -134,7 +133,7 @@ namespace TestProject
             {
                 PlaylistId = playlistId,
                 Title = "Existing Song",
-                ArtistNames = new List<string> { "Artist 1" }, // ✅ Fixed syntax
+                ArtistNames = new List<string> { "Artist 1" },
                 Album = "Album",
                 Url = null,
                 DurationMs = null
@@ -145,10 +144,10 @@ namespace TestProject
 
             // --- ASSERT ---
             Assert.False(success);
-            Assert.Equal("This song is already in the playlist.", error); // ✅ Correct error message
+            Assert.Equal("This song is already in the playlist.", error);
             Assert.Null(returnedSongId);
 
-            // ✅ Verify AddPlaylistSongAsync was NEVER called (song already exists)
+            // Verify AddPlaylistSongAsync was NEVER called (song already exists)
             mockPlaylistRepo.Verify(
                 x => x.AddPlaylistSongAsync(It.IsAny<PlaylistSong>()),
                 Times.Never

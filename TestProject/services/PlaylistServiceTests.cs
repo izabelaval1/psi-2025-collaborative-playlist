@@ -1,15 +1,14 @@
-﻿using Xunit; // xUnit framework for writing tests
-using Moq; // Moq library to create fake/mock implementations of dependencies
-using MyApi.Services; // Your AuthService to test
-using MyApi.Repositories; // IUserRepository interface
-using MyApi.Models; // User, UserRole
-using MyApi.Dtos; // LoginUserDto, LoginResponseDto
-using System.Threading.Tasks; // For async/await support
+﻿using Xunit;
+using Moq;
+using MyApi.Services;
+using MyApi.Repositories;
+using MyApi.Models;
+using MyApi.Dtos;
+using System.Threading.Tasks;
 
 namespace TestProject
 {
-    // This class contains all tests for the PlaylistService
-    public class PlaylistServiceTests
+    public class PlaylisServiceTests
     {
 
         [Fact]
@@ -244,7 +243,7 @@ namespace TestProject
 
             var id = 1;
 
-            // ✅ Playlist EXISTS but has a Guest as host (not allowed)
+            // Playlist EXISTS but has a Guest as host (not allowed)
             mockPlaylistRepo.Setup(x => x.GetByIdWithDetailsAsync(id))
                 .ReturnsAsync(new Playlist
                 {
@@ -389,11 +388,6 @@ namespace TestProject
             mockPlaylistRepo.Verify(x => x.DeleteAsync(It.IsAny<Playlist>()), Times.Once);
         }
 
-
-
-        // [Fact]
-        // public async Task UpdateByIdAsync_WithValidData_ShouldUpdatePlaylist()
-        // {
         [Fact]
         public async Task RemoveSongFromPlaylistAsync_WithNonExistentSong_ShouldReturnError()
         {

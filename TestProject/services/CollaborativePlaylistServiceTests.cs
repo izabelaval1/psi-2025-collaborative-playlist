@@ -192,38 +192,6 @@ namespace TestProject.Services
             Assert.False(result.Success);
         }
 
-        // ---------------------------
-        // REAL-TIME SESSION USERS
-        // ---------------------------
-
-        //     [Fact]
-        //     public async Task JoinAndLeavePlaylistSession_ShouldUpdateActiveUsers()
-        //     {
-        //         // Arrange
-        //         var playlistId = 1;
-        //         var userId = 10;
-
-        //         var playlistRepoMock = new Mock<IPlaylistRepository>();
-        //         var userRepoMock = new Mock<IUserRepository>();
-        //         var songRepoMock = new Mock<ISongRepository>();
-
-        //         var service = new CollaborativePlaylistService(
-        //             playlistRepoMock.Object,
-        //             userRepoMock.Object,
-        //             songRepoMock.Object
-        //         );
-
-        //         // Act
-        //         await service.JoinPlaylistSessionAsync(playlistId, userId);
-
-        //         var usersAfterJoin = await service.GetActiveUsersAsync(playlistId);
-        //         Assert.Contains(usersAfterJoin, u => u.UserId == userId);
-
-        //         await service.LeavePlaylistSessionAsync(playlistId, userId);
-
-        //         var usersAfterLeave = await service.GetActiveUsersAsync(playlistId);
-        //         Assert.DoesNotContain(usersAfterLeave, u => u.UserId == userId);
-        //     }
 
         [Fact]
         public async Task AddCollaboratorAsync_ShouldFail_WhenUserDoesNotExist()

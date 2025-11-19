@@ -1,35 +1,23 @@
-﻿using Xunit; // xUnit framework for writing tests
-using Moq; // Moq library to create fake/mock implementations of dependencies
-using MyApi.Services; // Your AuthService to test
-using MyApi.Repositories; // IUserRepository interface
-using MyApi.Models; // User, UserRole
-using MyApi.Dtos; // LoginUserDto, LoginResponseDto
-using System.Threading.Tasks; // For async/await support
+﻿using Xunit;
+using Moq;
+using MyApi.Services;
+using MyApi.Repositories;
+using MyApi.Models;
+using MyApi.Dtos;
+using System.Threading.Tasks;
 
 namespace TestProject
 {
-    // This class contains all tests for the AuthService
     public class AuthServiceTests
     {
-        /*
-         * Test #1: Login fails when the password is incorrect
-         * Key concept: negative scenario testing
-         * - We simulate a user in the database
-         * - Provide the wrong password in login
-         * - Ensure AuthService returns failure
-         * - Ensure TokenService.Generate is NOT called
-         */
-        [Fact] // Marks this method as a test case for xUnit
+        [Fact]
         public async Task Login_ShouldFail_WhenPasswordIsWrong()
         {
             // --- ARRANGE ---
-            // Create mock objects for the dependencies of AuthService
-            // We don't want to hit a real database or generate real JWTs
             var mockUserRepo = new Mock<IUserRepository>();
             var mockTokenService = new Mock<ITokenService>();
 
             // Simulate a stored user in the "database"
-            // Notice we hash the password like the real backend does
             var storedUser = new User
             {
                 Id = 1,
@@ -65,18 +53,9 @@ namespace TestProject
             Assert.Null(result);
 
             // Ensure the TokenService's Generate method was never called
-            // This is important: failed login should NOT issue tokens
             mockTokenService.Verify(x => x.Generate(It.IsAny<User>()), Times.Never);
         }
-
-        /*
-         * Test #2: Login succeeds when credentials are correct
-         * Key concept: positive scenario testing
-         * - Provide correct username and password
-         * - Ensure AuthService returns success
-         * - Ensure TokenService.Generate is called exactly once
-         * - Ensure returned DTO has correct information
-         */
+        
         [Fact]
         public async Task Login_ShouldSucceed_WhenCredentialsAreCorrect()
         {

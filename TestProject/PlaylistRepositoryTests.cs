@@ -28,7 +28,7 @@ namespace TestProject
             using var context = CreateDbContext();
             var repo = new PlaylistRepository(context);
 
-            var host = new User { Id = 1, Username = "host", Role = UserRole.Host };
+            var host = new User { Id = 1, Username = "host", PasswordHash = "hashed", Role = UserRole.Host };
             var song = new Song { Id = 1, Title = "Test Song" };
             var artist = new Artist { Id = 1, Name = "Test Artist" };
             song.Artists = new List<Artist> { artist };
@@ -112,8 +112,9 @@ namespace TestProject
             using var context = CreateDbContext();
             var repo = new PlaylistRepository(context);
 
-            var host = new User { Id = 1, Username = "host", Role = UserRole.Host };
-            var user = new User { Id = 2, Username = "user", Role = UserRole.Guest };
+            var host = new User { Id = 1, Username = "host", PasswordHash = "hashed", Role = UserRole.Host };
+            var user = new User { Id = 2, Username = "user", PasswordHash = "hashed", Role = UserRole.Guest };
+
             var song = new Song { Id = 1, Title = "Test Song" };
             var artist = new Artist { Id = 1, Name = "Test Artist" };
             song.Artists = new List<Artist> { artist };
@@ -409,7 +410,14 @@ namespace TestProject
             using var context = CreateDbContext();
             var repo = new PlaylistRepository(context);
 
-            var user = new User { Id = 1, Username = "testuser", Role = UserRole.Guest };
+            var user = new User
+            {
+                Id = 1,
+                Username = "testuser",
+                PasswordHash = "hashed", // <-- REQUIRED
+                Role = UserRole.Guest
+            };
+
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
