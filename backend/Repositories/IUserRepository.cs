@@ -10,7 +10,7 @@ namespace MyApi.Repositories
     {
         Task<IEnumerable<User>> GetAllAsync();
         Task<User?> GetByIdAsync(int id);
-        
+
 
         // NEW:
         Task<User?> GetByUsernameAsync(string username);
@@ -20,5 +20,8 @@ namespace MyApi.Repositories
         Task DeleteAsync(User user);
         Task UpdateAsync(User user);
         Task<bool> ExistsAsync(int id);
+        
+        Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids);
+
     }
 }

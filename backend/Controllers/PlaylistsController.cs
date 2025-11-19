@@ -8,11 +8,11 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class PlaylistsController : ControllerBase
     {
-        private readonly IPlaylistService _playlistService;
+        private readonly IPlaylistService _playlistService; 
 
         public PlaylistsController(IPlaylistService playlistService)
         {
-            _playlistService = playlistService;
+            _playlistService = playlistService; //DI
         }
 
         [HttpGet]

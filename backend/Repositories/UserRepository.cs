@@ -57,5 +57,11 @@ namespace MyApi.Repositories
         {
             return await _db.Users.AnyAsync(u => u.Id == id);
         }
+
+        public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids)
+        {
+            return await _db.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+        }
+
     }
 }

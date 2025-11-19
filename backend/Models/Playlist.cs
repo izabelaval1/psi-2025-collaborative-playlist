@@ -13,6 +13,9 @@ public partial class Playlist
     // Navigation to the hosting user
     public virtual User? Host { get; set; }
 
+    
+
+
     // Many-to-many relationship: collaborators
     public virtual ICollection<User> Users { get; set; } = new List<User>();
 

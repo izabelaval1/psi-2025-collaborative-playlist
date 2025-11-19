@@ -47,7 +47,7 @@ public partial class PlaylistAppContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Album).HasMaxLength(100).HasColumnName("album");
-           // entity.Property(e => e.Duration).HasColumnName("duration");
+            entity.Property(e => e.DurationSeconds).HasColumnName("duration_seconds");
             entity.Property(e => e.Title).HasMaxLength(100).HasColumnName("title");
 
             // Song-Artist many-to-many

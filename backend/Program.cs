@@ -33,6 +33,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<ISongRepository, SongRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICollaborativePlaylistService, CollaborativePlaylistService>();
 
 // ===================================================
 //  CORS — leidžiam frontend'ui jungtis prie API
