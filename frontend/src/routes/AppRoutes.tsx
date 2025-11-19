@@ -24,7 +24,10 @@ export default function AppRoutes() {
       <Route element={<MainLayout isAuthenticated={isAuthenticated} username={user?.username} onLogout={handleLogout} />}>
 
         {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
+        <Route
+        path="/"
+        element={isAuthenticated ? <Navigate to="/main" /> : <LandingPage />}
+        />
 
         <Route
           path="/login"
