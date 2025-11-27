@@ -20,10 +20,11 @@ export const authService = {
     return res.data;
   },
 
-  async register(username: string, password: string) {
+  async register(username: string, password: string, confirmPassword: string) {
     const res = await axios.post(`${API_URL}/register`, {
       username,
       password,
+      confirmPassword,
     });
     
     // Išsaugoti token po registracijos

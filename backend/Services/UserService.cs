@@ -31,7 +31,6 @@ namespace MyApi.Services
             var u = await _userRepository.GetByIdAsync(id);
             if (u == null) 
             {
-                var ex = new UserNotFoundException(id);
                 return null;
             }
             return _converter.ConvertOne(u, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role });
@@ -42,8 +41,7 @@ namespace MyApi.Services
             var u = await _userRepository.GetByIdAsync(id);
             if (u == null) 
             {
-                var ex = new UserNotFoundException(id);
-                return (false, ex.Message);
+                return (false, "User not found");
             }
             await _userRepository.DeleteAsync(u);
             return (true, null);
@@ -54,8 +52,7 @@ namespace MyApi.Services
             var u = await _userRepository.GetByIdAsync(id);
             if (u == null) 
             {
-                var ex = new UserNotFoundException(id);
-                return (false, ex.Message);
+                return (false, "User not found");
             }
 
             u.Role = newRole;

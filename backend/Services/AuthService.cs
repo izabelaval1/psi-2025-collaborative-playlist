@@ -1,5 +1,4 @@
 using MyApi.Dtos;
-using MyApi.Exceptions;
 using MyApi.Models;
 using MyApi.Repositories;
 
@@ -24,10 +23,14 @@ namespace MyApi.Services
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
                 return (false, "Username and password are required", null);
 
+            if(password != dto.ConfirmPassword)
+            {
+                return (false, "Passwords do not match", null);
+            }
+
             if (await _users.ExistsByUsernameAsync(username))
             {
-                var ex = new UserAlreadyExistsException(username);
-                return (false, ex.Message, null);
+                return (false, "Username already exists", null);
             }
 
             var user = new User
