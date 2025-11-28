@@ -13,6 +13,8 @@ public partial class Playlist
     // Navigation to the hosting user
     public virtual User? Host { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     
 
 

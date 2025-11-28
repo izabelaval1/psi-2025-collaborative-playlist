@@ -9,4 +9,5 @@ export interface PlaylistResponseDto {
   host?: UserDto;
   songs: SongDto[];
   collaborators: UserDto[];
+  imageUrl?: string;
 }

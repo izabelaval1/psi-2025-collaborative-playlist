@@ -13,15 +13,24 @@ export default function CreatePlaylist({ onPlaylistCreated }: CreatePlaylistProp
     description: "",
     hostId: "1",
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError(null);
     setSuccess(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+  setImageFile(file);
+  setError(null);
+  setSuccess(false);
   };
 
   const handleSubmit = async () => {
@@ -39,11 +48,13 @@ export default function CreatePlaylist({ onPlaylistCreated }: CreatePlaylistProp
       const newPlaylist = await PlaylistService.create({
         name: name.trim(),
         description: description.trim(),
-        hostId: Number(hostId)
+        hostId: Number(hostId),
+        imageFile: imageFile ?? undefined,
       });
 
       onPlaylistCreated(newPlaylist);
       setForm({ name: "", description: "", hostId }); // reset except hostId
+      setImageFile(null);
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Failed to create playlist.");
@@ -73,6 +84,15 @@ export default function CreatePlaylist({ onPlaylistCreated }: CreatePlaylistProp
         disabled={loading}
         className="w-full mb-2 p-2 border rounded-lg"
       />
+
+      <input
+      type="file"
+      accept="image/*"
+      onChange={handleFileChange}
+      disabled={loading}
+      className="w-full mb-3 p-2 border rounded-lg"
+      />
+
 
       <input
         name="hostId"

@@ -51,7 +51,7 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
         data-testid="playlist-display-header"
       >
         <img
-          src={`https://picsum.photos/seed/${playlist.id}/200`}
+          src={playlist.imageUrl || `https://picsum.photos/seed/${playlist.id}/200`}
           alt={playlist.name}
           className="w-48 h-48 rounded-xl object-cover mb-4 md:mb-0 md:mr-6 shadow-md"
           data-testid="playlist-display-image"

@@ -33,7 +33,7 @@ export function usePlaylists() {
 
   // Delete playlist
   const deletePlaylist = async (id: number) => {
-    await playlistService.delete(id);
+    await PlaylistService.delete(id);
     setPlaylists(prev => prev.filter(p => p.id !== id));
   };
 

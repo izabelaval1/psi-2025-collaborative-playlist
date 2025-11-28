@@ -34,15 +34,41 @@ namespace MyApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePlaylist([FromBody] PlaylistCreateDto newPlaylist)
+        public async Task<IActionResult> Create([FromForm] PlaylistCreateFormDto dto)
         {
-            var (success, error, created) = await _playlistService.CreateAsync(newPlaylist);
+            string? imageUrl = null;
 
+            if (dto.CoverImage != null && dto.CoverImage.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.CoverImage.FileName)}";
+                var root = Directory.GetCurrentDirectory();
+                var folder = Path.Combine(root, "wwwroot", "covers");
+                Directory.CreateDirectory(folder);
+
+                var path = Path.Combine(folder, fileName);
+
+                using (var stream = System.IO.File.Create(path))
+                {
+                    await dto.CoverImage.CopyToAsync(stream);
+                }
+
+                imageUrl = $"/covers/{fileName}";
+            }
+
+            var createDto = new PlaylistCreateDto {
+                Name = dto.Name,
+                Description = dto.Description,
+                HostId = dto.HostId,
+                ImageUrl = imageUrl
+            };
+
+            var (success, error, created) = await _playlistService.CreateAsync(createDto);
             if (!success)
-                return BadRequest(error);
+                return BadRequest(new { message = error });
 
             return CreatedAtAction(nameof(GetPlaylistById), new { id = created!.Id }, created);
         }
+
 
         [HttpPut("by-id/{id:int}")]
         public async Task<IActionResult> UpdatePlaylistById(int id, [FromBody] PlaylistUpdateDto updatedPlaylist)
