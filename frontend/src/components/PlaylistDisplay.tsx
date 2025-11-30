@@ -7,6 +7,8 @@ interface PlaylistDisplayProps {
   onSongRemoved: () => void;
 }
 
+const API_BASE = "http://localhost:5000";
+
 const formatDuration = (seconds?: number): string => {
   if (!seconds) return "--:--";
   const mins = Math.floor(seconds / 60);
@@ -40,6 +42,13 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
     );
   }
 
+  const coverSrc = playlist.imageUrl
+  ? (playlist.imageUrl.startsWith("http")
+      ? playlist.imageUrl
+      : `${API_BASE}${playlist.imageUrl}` // /covers/... → http://localhost:5000/covers/...
+    )
+  : `https://picsum.photos/seed/${playlist.id}/200`;
+
   return (
     <div
       className="bg-neutral-900 text-white p-6 rounded-2xl shadow-lg overflow-y-auto h-full"
@@ -50,12 +59,23 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({ playlist, onSongRemov
         className="flex flex-col md:flex-row items-center mb-8"
         data-testid="playlist-display-header"
       >
+        <div
+        className="rounded-xl overflow-hidden mb-4 md:mb-0 md:mr-6 shadow-md flex-shrink-0"
+        style={{ width: '192px', height: '192px' }} // same size
+        data-testid="playlist-display-image"  
+        >    
         <img
-          src={playlist.imageUrl || `https://picsum.photos/seed/${playlist.id}/200`}
+          src={coverSrc}
           alt={playlist.name}
-          className="w-48 h-48 rounded-xl object-cover mb-4 md:mb-0 md:mr-6 shadow-md"
-          data-testid="playlist-display-image"
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block'
+          }}
         />
+        </div>  
 
         <div className="flex flex-col" data-testid="playlist-display-meta">
           <h1
