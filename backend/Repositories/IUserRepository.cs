@@ -23,5 +23,7 @@ namespace MyApi.Repositories
         
         Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids);
 
+        Task<bool> UpdateProfileImageAsync(int userId, string imagePath);
+
     }
 }

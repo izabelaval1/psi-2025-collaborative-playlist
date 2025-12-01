@@ -23,7 +23,7 @@ namespace MyApi.Services
         {
             var users = await _userRepository.GetAllAsync();
             var usersList = users.ToList(); // Konvertuojam IEnumerable į List
-            return _converter.ConvertAll(usersList, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role });
+            return _converter.ConvertAll(usersList, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role, ProfileImage = u.ProfileImage });
         }
 
         public async Task<UserDto?> GetByIdAsync(int id)
@@ -33,7 +33,7 @@ namespace MyApi.Services
             {
                 return null;
             }
-            return _converter.ConvertOne(u, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role });
+            return _converter.ConvertOne(u, u => new UserDto { Id = u.Id, Username = u.Username, Role = u.Role, ProfileImage = u.ProfileImage });
         }
 
         public async Task<(bool Success, string? Error)> DeleteAsync(int id)
@@ -58,6 +58,11 @@ namespace MyApi.Services
             u.Role = newRole;
             await _userRepository.UpdateAsync(u);
             return (true, null);
+        }
+
+         public async Task<bool> UpdateProfileImageAsync(int userId, string imagePath)
+        {
+            return await _userRepository.UpdateProfileImageAsync(userId, imagePath);
         }
     }
 }

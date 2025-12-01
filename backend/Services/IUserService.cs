@@ -9,5 +9,7 @@ namespace MyApi.Services
         Task<UserDto?> GetByIdAsync(int id);
         Task<(bool Success, string? Error)> DeleteAsync(int id);
         Task<(bool Success, string? Error)> ChangeRoleAsync(int id, UserRole newRole);
+
+        Task<bool> UpdateProfileImageAsync(int userId, string imagePath);
     }
 }

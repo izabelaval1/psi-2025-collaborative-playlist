@@ -8,6 +8,7 @@ import RegisterPage from "../pages/public/register/registerPage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { authService } from "../services/authService";
 import CollaborationsPage from "../pages/protected/collaborations/CollaborationsPage";
+import Settings from '../pages/public/settings/settingsPage';
 
 export default function AppRoutes() {
   const navigate = useNavigate();
@@ -58,7 +59,14 @@ export default function AppRoutes() {
           }
         />
 
-   
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
 
       </Route>
     </Routes>
