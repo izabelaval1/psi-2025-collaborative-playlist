@@ -5,6 +5,8 @@ using MyApi.Services;
 using System.Security.Claims;
 using MyApi.Models;
 using MyApi.Utils;
+using Microsoft.AspNetCore.Hosting;
+
 
 namespace MyApi.Controllers
 {
@@ -72,83 +74,28 @@ namespace MyApi.Controllers
 
         [Authorize]
         [HttpPut("{id}/profile-image")]
-        public async Task<IActionResult> UpdateProfileImage(int id, [FromForm] IFormFile? imageFile)
+        public async Task<IActionResult> UpdateProfileImage(int id, [FromForm] IFormFile? imageFile, [FromServices] IWebHostEnvironment env)
         {
-            // Pasiimam ID taip pat, kaip GetCurrentUser
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var currentUserId))
-            {
                 return Unauthorized("Invalid token");
-            }
-            
 
-            // Only allow users to update their own profile image, unless they're an admin/host (sitas dar nesutvarkyta, visi user defaultu yra host)
-            if (currentUserId != id)
+            if (currentUserId != id && !User.IsInRole("Admin") && !User.IsInRole("Host"))
+                return Forbid();
+
+            if (imageFile == null || imageFile.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            try
             {
-            // laikina
-                var isAdminOrHost = User.IsInRole("Admin") || User.IsInRole("Host");
-                if (!isAdminOrHost)
-                {
-                    return Forbid();
-                }
+                var dto = await _userservice.UpdateProfileImageAsync(id, imageFile, env.WebRootPath);
+                if (dto == null) return NotFound();
+                return Ok(dto);
             }
-            
-            var user = await _userservice.GetByIdAsync(id);
-            if (user == null) return NotFound();
-
-            if (imageFile != null)
+            catch (ArgumentException ex)
             {
-                // Validate file type
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
-                
-                if (!allowedExtensions.Contains(extension))
-                {
-                    return BadRequest("Invalid file type. Only JPG, PNG, and GIF are allowed.");
-                }
-                
-                // Validate file size (e.g., 5MB max)
-                if (imageFile.Length > 5 * 1024 * 1024)
-                {
-                    return BadRequest("File size cannot exceed 5MB.");
-                }
-
-                // Ištrink seną nuotrauką jei yra
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
-                    var oldPath = Path.Combine("wwwroot", user.ProfileImage.TrimStart('/'));
-                    if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
-                }
-
-                // Išsaugok naują
-                var uploadsFolder = Path.Combine("wwwroot", "profiles");
-                Directory.CreateDirectory(uploadsFolder);
-                
-                var uniqueFileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await imageFile.CopyToAsync(stream);
-                }
-                
-                var imagePath = $"/profiles/{uniqueFileName}";
-
-                var success = await _userservice.UpdateProfileImageAsync(id, imagePath);
-                if (!success) return BadRequest("Failed to update profile image.");
-
-                user.ProfileImage = imagePath;
+                return BadRequest(ex.Message); // iš serviso ateina validacijos klaidos
             }
-            
-            var dto = new UserDto {
-                Id = user.Id,
-                Username = user.Username,
-                Role = user.Role,
-                ProfileImage = user.ProfileImage
-            };
-
-            return Ok(dto);
 
         }
     }
