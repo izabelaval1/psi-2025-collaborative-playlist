@@ -19,15 +19,29 @@ export const PlaylistService = {
     return res.json();
   },
 
-  async create(data: { name: string; description?: string; hostId: number}): Promise<Playlist> {
-    const res = await fetch(BASE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error(await res.text() || "Failed to create playlist");
-    return res.json();
+  async create(data: {
+  name: string;
+  description?: string;
+  hostId: number;
+  imageFile?: File;
+  }): Promise<Playlist> {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("hostId", data.hostId.toString());
+  if (data.description) formData.append("description", data.description);
+  if (data.imageFile) {
+    formData.append("coverImage", data.imageFile); // pavadinimas turi sutapt su backend DTO property
+  }
+
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    body: formData,           //  be Content-Type, naršyklė pati uždės boundary
+  });
+
+  if (!res.ok) throw new Error((await res.text()) || "Failed to create playlist");
+  return res.json();
   },
+
 
   async update(id: number, data: Partial<Playlist>): Promise<Playlist> {
     const res = await fetch(`${BASE_URL}/${id}`, {
@@ -48,7 +62,6 @@ export const PlaylistService = {
     throw new Error(await res.text() || "Failed to remove song from playlist");
   }
   },
-
 
   async delete(id: number): Promise<void> {
     const res = await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });

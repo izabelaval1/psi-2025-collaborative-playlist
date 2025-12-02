@@ -9,5 +9,7 @@
         public UserDto? Host { get; set; }
         public List<SongDto> Songs { get; set; } = new();
         public List<UserDto> Collaborators { get; set; } = new();
+
+        public string? ImageUrl { get; set; }
     }
 }

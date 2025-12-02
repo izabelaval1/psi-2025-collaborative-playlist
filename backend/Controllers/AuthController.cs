@@ -13,6 +13,11 @@ namespace MyApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterUserDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var (success, error, result) = await _authService.RegisterAsync(dto);
             if (!success)
                 return BadRequest(new { message = error });

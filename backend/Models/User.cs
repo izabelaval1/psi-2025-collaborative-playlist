@@ -14,4 +14,6 @@ public partial class User
     public virtual ICollection<Playlist> CollaboratingPlaylists { get; set; } = new List<Playlist>();
 
     public UserRole Role { get; set; } = UserRole.Guest; // default role
+
+    public string? ProfileImage { get; set; }
 }

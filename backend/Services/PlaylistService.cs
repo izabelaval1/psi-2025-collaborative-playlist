@@ -41,6 +41,7 @@ namespace MyApi.Services
                 Name = p.Name,
                 Description = p.Description,
                 HostId = p.HostId,
+                ImageUrl = p.ImageUrl,
                 Host = p.Host != null ? new UserDto
                 {
                     Id = p.Host.Id,
@@ -87,6 +88,7 @@ namespace MyApi.Services
                 Name = p.Name,
                 Description = p.Description,
                 HostId = p.HostId,
+                ImageUrl = p.ImageUrl,
                 Host = p.Host != null ? new UserDto
                 {
                     Id = p.Host.Id,
@@ -138,7 +140,8 @@ namespace MyApi.Services
             {
                 Name = newPlaylist.Name,
                 Description = newPlaylist.Description,
-                HostId = newPlaylist.HostId
+                HostId = newPlaylist.HostId,
+                ImageUrl = newPlaylist.ImageUrl
             };
 
             await _playlistRepository.AddAsync(playlist);
@@ -161,6 +164,7 @@ namespace MyApi.Services
 
             existing.Name = updatedPlaylist.Name;
             existing.Description = updatedPlaylist.Description;
+            existing.ImageUrl = updatedPlaylist.ImageUrl;
 
             if (updatedPlaylist.SongIds != null)
             {
@@ -206,6 +210,9 @@ namespace MyApi.Services
 
             if (editedPlaylist.Description != null)
                 existing.Description = editedPlaylist.Description;
+
+            if (editedPlaylist.ImageUrl != null)
+                existing.ImageUrl = editedPlaylist.ImageUrl;
 
             await _playlistRepository.UpdateAsync(existing);
 

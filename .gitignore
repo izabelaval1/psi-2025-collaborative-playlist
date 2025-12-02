@@ -1,3 +1,5 @@
+########## .NET / C# ##########
+
 # Build results
 bin/
 obj/
@@ -10,21 +12,12 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 
-# Visual Studio files
-.vs/
+# Dotnet user files
 *.user
 *.suo
 *.userosscache
 *.userprefs
 *.csproj.user
-
-# .NET artifacts
-*.dll
-*.exe
-*.pdb
-*.cache
-*.sourcelink.json
-*.mdb
 
 # NuGet
 *.nupkg
@@ -34,30 +27,65 @@ packages/
 *.nuspec
 *.psmdcp
 
+# Artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+*.sourcelink.json
+
 # Logs
 *.log
 
-# Others
+# Database / Temp files
 *.db
 *.jfm
 *.tmp
 *.bak
 
-# OS-specific
+########## Visual Studio ##########
+
+.vs/
+.vscode/
+
+########## OS files ##########
+
 .DS_Store
 Thumbs.db
 
+########## Docker ##########
+
 docker/.env
-database/
 docker/volumes/
 docker/database/
-
-
-.env
-
 docker/backup*.sql
 
-backend/appsettings.Development.json
+########## Backend ##########
 
-.vscode/
-.vs/
+backend/appsettings.Development.json
+backend/wwwroot/covers/
+backend/wwwroot/profiles/
+
+########## Frontend (React / Vite) ##########
+
+node_modules/
+dist/
+*.local
+*.lock
+
+########## Test Project ##########
+
+TestProject/coverage-report/
+coverage/
+coverage-report/
+lcov-report/
+*.lcov
+*.cov
+*.coverage
+coverage.cobertura.xml
+
+########## Environment files ##########
+
+.env
+*.env

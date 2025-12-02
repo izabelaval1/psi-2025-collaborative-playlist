@@ -5,4 +5,5 @@ export type Playlist = {
   name: string;
   description?: string; // matches nullable Description in backend
   songs: Song[];        // array of Song objects
+  imageUrl?: string;    // matches nullable ImageUrl in backend
 };

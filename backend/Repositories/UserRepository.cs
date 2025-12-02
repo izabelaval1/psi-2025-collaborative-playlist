@@ -63,5 +63,15 @@ namespace MyApi.Repositories
             return await _db.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
         }
 
+        public async Task<bool> UpdateProfileImageAsync(int userId, string imagePath)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null) return false;
+            
+            user.ProfileImage = imagePath;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

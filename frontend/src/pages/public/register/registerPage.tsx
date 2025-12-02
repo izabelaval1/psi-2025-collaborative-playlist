@@ -42,7 +42,7 @@ const RegisterPage = () => {
 
     try {
       setMessage("Registering...");
-      await authService.register(values.username, values.password);
+      await authService.register(values.username, values.password, values.confirmPassword);
 
       setMessage("Account created successfully!");
       navigate("/main");  // redirect į main
@@ -91,7 +91,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               placeholder="Confirm your password"
             />
-            {errors.password && <p className={styles.error}>{errors.password}</p>}
+            {errors.confirmPassword && <p className={styles.error}>{errors.confirmPassword}</p>}
             </div>
 
           <button className={styles.signInBtn} type="submit">

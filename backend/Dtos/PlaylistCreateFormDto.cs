@@ -1,12 +1,10 @@
 namespace MyApi.Dtos
 {
-        public record PlaylistCreateDto
+    public record PlaylistCreateFormDto
     {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public int HostId { get; set; }
-
-        public string? ImageUrl { get; set; }
- 
+        public IFormFile? CoverImage { get; set; }
     }
 }
