@@ -1,0 +1,109 @@
+@use '../../../../styles/base/variables' as *;
+
+.playlist-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateY(-4px);
+
+    .playlist-card__overlay {
+      opacity: 1;
+    }
+
+    .playlist-card__play-button {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  &__cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 16px;
+
+    &-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &__play-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #1db954;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    cursor: pointer;
+    transform: translateY(8px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    &:hover {
+      background-color: #1ed760;
+      transform: scale(1.06) translateY(0);
+    }
+
+    &:active {
+      transform: scale(0.98) translateY(0);
+    }
+  }
+
+  &__info {
+    padding: 0 4px;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e6eef8;
+    margin: 0 0 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    color: rgba(230, 238, 248, 0.6);
+    margin: 0 0 12px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: rgba(230, 238, 248, 0.5);
+    font-weight: 500;
+  }
+}

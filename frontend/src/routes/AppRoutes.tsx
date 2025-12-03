@@ -7,8 +7,9 @@ import LoginPage from "../pages/public/login/loginPage";
 import RegisterPage from "../pages/public/register/registerPage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { authService } from "../services/authService";
-import CollaborationsPage from "../pages/protected/collaborations/CollaborationsPage";
+import Temp from "../pages/protected/temp/Temp";
 import Settings from '../pages/public/settings/settingsPage';
+import HomePage from "../pages/protected/main/HomePage";
 
 export default function AppRoutes() {
   const navigate = useNavigate();
@@ -51,10 +52,19 @@ export default function AppRoutes() {
         />
         
         <Route
-          path="/collaborations"
+          path="/temp"
           element={
             <ProtectedRoute>
-              <CollaborationsPage />
+              <Temp />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/playlists"
+          element={
+            <ProtectedRoute>
+              <HomePage />
             </ProtectedRoute>
           }
         />
