@@ -21,7 +21,7 @@ export default function HomePage() {
       console.error("Failed to load playlists:", err);
     }
   };
-  
+
   useEffect(() => {
     loadPlaylists();
   }, []);
@@ -41,13 +41,26 @@ export default function HomePage() {
     await loadPlaylists();
   };
 
+  // Called when a playlist is updated inside a card
+  const handlePlaylistUpdated = async (updated: Playlist) => {
+    // Simple approach: reload list to get latest data
+    await loadPlaylists();
+  };
+
+  // Called when a playlist is deleted inside a card
+  const handlePlaylistDeleted = async (id: number) => {
+    await loadPlaylists();
+  };
+
   return (
     <div className="home-page">
       <SongSearch onSongAdded={handleSongListChanged} playlists={playlists} />
-      <RecentPlaylists 
-        playlists={playlists} 
+      <RecentPlaylists
+        playlists={playlists}
         onPlaylistClick={handlePlaylistClick}
         onCreateClick={() => setIsModalOpen(true)}
+        onPlaylistUpdated={handlePlaylistUpdated}
+        onPlaylistDeleted={handlePlaylistDeleted}
       />
 
       <Modal

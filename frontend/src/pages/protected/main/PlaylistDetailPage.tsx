@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, Shuffle, Save, Trash2, MoreHorizontal, Clock, Music2 } from "lucide-react";
+import { Play, Shuffle, Save, Trash2, MoreHorizontal, Clock, Music2, Edit3, Check, X } from "lucide-react";
 import { PlaylistService } from "../../../services/PlaylistService";
 import type { PlaylistResponseDto } from "../../../types/PlaylistResponseDto";
 import "./PlaylistDetailPage.scss";
@@ -12,13 +12,26 @@ export default function PlaylistDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<"recent" | "title" | "artist">("recent");
 
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [titleInput, setTitleInput] = useState("");
+  const [descriptionInput, setDescriptionInput] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     loadPlaylist();
   }, [id]);
 
+  useEffect(() => {
+    if (playlist) {
+      setTitleInput(playlist.name);
+      setDescriptionInput(playlist.description || "");
+    }
+  }, [playlist]);
+
   const loadPlaylist = async () => {
     if (!id) return;
-    
+
     setIsLoading(true);
     try {
       const data = await PlaylistService.getById(Number(id));
@@ -65,6 +78,40 @@ export default function PlaylistDetailPage() {
     return hours > 0 ? `${hours} hr ${minutes} min` : `${minutes} min`;
   };
 
+  const handleStartEdit = () => {
+    if (!playlist) return;
+    setTitleInput(playlist.name);
+    setDescriptionInput(playlist.description || "");
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    if (!playlist) return;
+    setTitleInput(playlist.name);
+    setDescriptionInput(playlist.description || "");
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!playlist) return;
+    if (!titleInput.trim()) {
+      alert("Playlist name can't be empty");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const payload = { name: titleInput.trim(), description: descriptionInput.trim() };
+      const updated = await PlaylistService.update(playlist.id, payload);
+      setPlaylist(updated);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update playlist:", err);
+      alert("Failed to update playlist");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="playlist-detail-page playlist-detail-page--loading">Loading...</div>;
   }
@@ -79,20 +126,50 @@ export default function PlaylistDetailPage() {
         <div className="playlist-detail-page__cover">
           <img src={getImageUrl()} alt={playlist.name} />
         </div>
-        
+
         <div className="playlist-detail-page__info">
-          <h1 className="playlist-detail-page__title">{playlist.name}</h1>
-          {playlist.description && (
-            <p className="playlist-detail-page__description">{playlist.description}</p>
+          {!isEditing ? (
+            <>
+              <h1 className="playlist-detail-page__title">{playlist.name}</h1>
+              {playlist.description && (
+                <p className="playlist-detail-page__description">{playlist.description}</p>
+              )}
+              <div className="playlist-detail-page__meta">
+                <span>Created by <strong>{playlist.host?.username || 'Unknown'}</strong></span>
+                <span>•</span>
+                <span>{getTotalDuration()}</span>
+                <span>•</span>
+                <span>{playlist.collaborators?.length || 0} collaborators</span>
+              </div>
+
+              <div className="playlist-detail-page__header-actions">
+                <button type="button" className="playlist-detail-page__edit-btn" onClick={handleStartEdit}>
+                  <Edit3 size={16} /> Edit
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <input
+                className="playlist-detail-page__title-input"
+                value={titleInput}
+                onChange={(e) => setTitleInput(e.target.value)}
+              />
+              <input
+                className="playlist-detail-page__description-input"
+                value={descriptionInput}
+                onChange={(e) => setDescriptionInput(e.target.value)}
+              />
+              <div className="playlist-detail-page__edit-actions">
+                <button type="button" className="playlist-detail-page__save-btn" onClick={handleSaveEdit} disabled={isSaving}>
+                  <Check size={14} /> Save
+                </button>
+                <button type="button" className="playlist-detail-page__cancel-btn" onClick={handleCancelEdit}>
+                  <X size={14} /> Cancel
+                </button>
+              </div>
+            </>
           )}
-          
-          <div className="playlist-detail-page__meta">
-            <span>Created by <strong>{playlist.host?.username || 'Unknown'}</strong></span>
-            <span>•</span>
-            <span>{getTotalDuration()}</span>
-            <span>•</span>
-            <span>{playlist.collaborators?.length || 0} collaborators</span>
-          </div>
         </div>
       </div>
 
@@ -117,21 +194,21 @@ export default function PlaylistDetailPage() {
 
       <div className="playlist-detail-page__sort">
         <span className="playlist-detail-page__sort-label">Sort by</span>
-        <button 
+        <button
           type="button"
           className={`playlist-detail-page__sort-btn ${sortBy === 'recent' ? 'playlist-detail-page__sort-btn--active' : ''}`}
           onClick={() => setSortBy('recent')}
         >
           Recently added
         </button>
-        <button 
+        <button
           type="button"
           className={`playlist-detail-page__sort-btn ${sortBy === 'title' ? 'playlist-detail-page__sort-btn--active' : ''}`}
           onClick={() => setSortBy('title')}
         >
           By title
         </button>
-        <button 
+        <button
           type="button"
           className={`playlist-detail-page__sort-btn ${sortBy === 'artist' ? 'playlist-detail-page__sort-btn--active' : ''}`}
           onClick={() => setSortBy('artist')}
@@ -165,7 +242,7 @@ export default function PlaylistDetailPage() {
                 <div className="playlist-detail-page__track-drag">
                   <Music2 size={16} />
                 </div>
-                
+
                 <div className="playlist-detail-page__track-info">
                   <div className="playlist-detail-page__track-name">{song.title}</div>
                 </div>
@@ -183,7 +260,7 @@ export default function PlaylistDetailPage() {
                   {song.durationFormatted || formatDuration(song.duration)}
                 </div>
 
-                <button 
+                <button
                   type="button"
                   className="playlist-detail-page__track-menu"
                   onClick={() => handleRemoveSong(song.id)}

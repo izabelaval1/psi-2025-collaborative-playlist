@@ -8,12 +8,16 @@ interface RecentPlaylistsProps {
   playlists: Playlist[];
   onPlaylistClick?: (playlist: Playlist) => void;
   onCreateClick?: () => void;
+  onPlaylistUpdated?: (playlist: Playlist) => void;
+  onPlaylistDeleted?: (id: number) => void;
 }
 
-export default function RecentPlaylists({ 
-  playlists, 
+export default function RecentPlaylists({
+  playlists,
   onPlaylistClick,
-  onCreateClick 
+  onCreateClick,
+  onPlaylistUpdated,
+  onPlaylistDeleted
 }: RecentPlaylistsProps) {
   const recentPlaylists = [...playlists]
     .sort((a, b) => b.id - a.id)
@@ -37,12 +41,14 @@ export default function RecentPlaylists({
 
       <div className="recent-playlists__grid">
         <AddPlaylistCard onClick={onCreateClick} />
-        
+
         {recentPlaylists.map((playlist) => (
           <PlaylistCard
             key={playlist.id}
             playlist={playlist}
             onClick={() => onPlaylistClick?.(playlist)}
+            onUpdated={(p) => onPlaylistUpdated?.(p)}
+            onDeleted={(id) => onPlaylistDeleted?.(id)}
           />
         ))}
       </div>
