@@ -12,10 +12,7 @@ namespace MyApi.Services
         private readonly ISongRepository _songRepository;
 
         // Thread-safe in-memory storage for active users
-
-        //key tipas- int (playlist id), value - ConcurrentDictionary<int, DateTime>>
         private static readonly ConcurrentDictionary<int, ConcurrentDictionary<int, DateTime>> _activeUsers = new();
-        
         private static readonly TimeSpan InactiveTimeout = TimeSpan.FromMinutes(1);
 
         public CollaborativePlaylistService(
@@ -28,9 +25,7 @@ namespace MyApi.Services
             _songRepository = songRepository;
         }
 
-
         // Collaborators
-
         public async Task<IEnumerable<UserDto>> GetCollaboratorsAsync(int playlistId)
         {
             var playlist = await _playlistRepository.GetByIdWithDetailsAsync(playlistId);
@@ -40,8 +35,52 @@ namespace MyApi.Services
             {
                 Id = u.Id,
                 Username = u.Username,
-                Role = u.Role
+                Role = u.Role,
+                ProfileImage = u.ProfileImage
             });
+        }
+
+        // NEW: Add collaborator by username
+        public async Task<(bool Success, string? Error)> AddCollaboratorByUsernameAsync(int playlistId, string username, int requesterId)
+        {
+            try
+            {
+                var playlist = await _playlistRepository.GetByIdWithDetailsAsync(playlistId);
+                if (playlist == null)
+                {
+                    return (false, $"Playlist with ID {playlistId} not found.");
+                }
+
+                if (playlist.HostId != requesterId)
+                {
+                    return (false, "Only host can add collaborators.");
+                }
+
+                var user = await _userRepository.GetByUsernameAsync(username);
+                if (user == null)
+                {
+                    return (false, $"User with username '{username}' not found.");
+                }
+
+                if (playlist.HostId == user.Id)
+                {
+                    return (false, "Host is already the owner of the playlist.");
+                }
+
+                if (playlist.Users.Any(u => u.Id == user.Id))
+                {
+                    return (false, "User is already a collaborator.");
+                }
+
+                playlist.Users.Add(user);
+                await _playlistRepository.UpdateAsync(playlist);
+
+                return (true, null);
+            }
+            catch (Exception)
+            {
+                return (false, "An error occurred while adding collaborator.");
+            }
         }
 
         public async Task<(bool Success, string? Error)> AddCollaboratorAsync(int playlistId, int userId, int requesterId)
@@ -113,7 +152,6 @@ namespace MyApi.Services
             }
         }
 
-        
         // Songs
         public async Task<(bool Success, string? Error)> AddSongAsync(int playlistId, int songId, int userId)
         {
@@ -147,7 +185,9 @@ namespace MyApi.Services
                 {
                     PlaylistId = playlistId,
                     SongId = songId,
-                    Position = position
+                    Position = position,
+                    AddedByUserId = userId, // NEW: Track who added the song
+                    AddedAt = DateTime.UtcNow // NEW: Track when it was added
                 });
 
                 return (true, null);
@@ -189,7 +229,6 @@ namespace MyApi.Services
             }
         }
 
-      
         // Access
         public async Task<bool> CanAccessPlaylistAsync(int playlistId, int userId)
         {
@@ -199,7 +238,6 @@ namespace MyApi.Services
             return playlist.HostId == userId || playlist.Users.Any(u => u.Id == userId);
         }
 
-      
         // Active Users (In-Memory)
         public Task JoinPlaylistSessionAsync(int playlistId, int userId)
         {
@@ -269,7 +307,6 @@ namespace MyApi.Services
             return result;
         }
 
-        
         // Cleanup (Optional - call from background service)
         public Task CleanupInactiveSessionsAsync()
         {

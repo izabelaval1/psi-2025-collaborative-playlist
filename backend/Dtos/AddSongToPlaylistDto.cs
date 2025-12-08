@@ -10,5 +10,6 @@ namespace MyApi.Dtos
 
         // Needed for Duration
         public int? DurationMs { get; set; }
+         public int? AddedByUserId { get; set; }
     }
 }

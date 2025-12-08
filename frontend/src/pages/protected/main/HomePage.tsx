@@ -27,12 +27,10 @@ export default function HomePage() {
   }, []);
 
   const handleSongListChanged = async () => {
-    // Reload playlists when a song is added
     await loadPlaylists();
   };
 
   const handlePlaylistClick = (playlist: Playlist) => {
-    // Navigate to playlist detail page
     navigate(`/playlist/${playlist.id}`);
   };
 
@@ -41,13 +39,10 @@ export default function HomePage() {
     await loadPlaylists();
   };
 
-  // Called when a playlist is updated inside a card
   const handlePlaylistUpdated = async (updated: Playlist) => {
-    // Simple approach: reload list to get latest data
     await loadPlaylists();
   };
 
-  // Called when a playlist is deleted inside a card
   const handlePlaylistDeleted = async (id: number) => {
     await loadPlaylists();
   };
@@ -71,7 +66,6 @@ export default function HomePage() {
         <CreatePlaylistForm
           onPlaylistCreated={handlePlaylistCreated}
           onCancel={() => setIsModalOpen(false)}
-          hostId={1} // TODO: Replace with actual user ID from auth context
         />
       </Modal>
     </div>

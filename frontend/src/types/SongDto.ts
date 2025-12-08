@@ -1,4 +1,5 @@
 import type { ArtistDto } from "./ArtistDto";
+import type { UserDto } from "./UserDto";
 
 export interface SongDto {
   id: number;
@@ -8,4 +9,7 @@ export interface SongDto {
   durationFormatted?: string;
   position?: number;
   artists: ArtistDto[];
+
+  addedBy?: UserDto;
+  addedAt?: string;  
 }

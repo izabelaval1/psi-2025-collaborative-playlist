@@ -20,10 +20,12 @@ namespace MyApi.Repositories
         Task DeleteAsync(User user);
         Task UpdateAsync(User user);
         Task<bool> ExistsAsync(int id);
-        
+
         Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<int> ids);
 
         Task<bool> UpdateProfileImageAsync(int userId, string imagePath);
+        
+        Task<IEnumerable<User>> SearchByUsernameAsync(string query, int limit = 10);
 
     }
 }

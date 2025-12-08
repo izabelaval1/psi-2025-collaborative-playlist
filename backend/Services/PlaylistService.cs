@@ -46,7 +46,8 @@ namespace MyApi.Services
                 {
                     Id = p.Host.Id,
                     Username = p.Host.Username,
-                    Role = p.Host.Role
+                    Role = p.Host.Role,
+                    ProfileImage = p.Host.ProfileImage
                 } : null,
                 Songs = p.PlaylistSongs
                     .OrderBy(ps => ps.Position)
@@ -55,6 +56,7 @@ namespace MyApi.Services
                         Id = ps.Song.Id,
                         Title = ps.Song.Title,
                         Album = ps.Song.Album,
+                        Duration = ps.Song.DurationSeconds,
                         DurationFormatted = ps.Song.DurationSeconds.HasValue
                             ? new Duration(ps.Song.DurationSeconds.Value).ToString()
                             : null,
@@ -63,13 +65,22 @@ namespace MyApi.Services
                         {
                             Id = a.Id,
                             Name = a.Name
-                        }).ToList()
+                        }).ToList(),
+                        AddedBy = ps.AddedBy != null ? new UserDto
+                        {
+                            Id = ps.AddedBy.Id,
+                            Username = ps.AddedBy.Username,
+                            Role = ps.AddedBy.Role,
+                            ProfileImage = ps.AddedBy.ProfileImage
+                        } : null,
+                        AddedAt = ps.AddedAt
                     }).ToList(),
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Role = u.Role
+                    Role = u.Role,
+                    ProfileImage = u.ProfileImage
                 }).ToList()
             });
         }
@@ -93,7 +104,8 @@ namespace MyApi.Services
                 {
                     Id = p.Host.Id,
                     Username = p.Host.Username,
-                    Role = p.Host.Role
+                    Role = p.Host.Role,
+                    ProfileImage = p.Host.ProfileImage
                 } : null,
                 Songs = p.PlaylistSongs
                     .OrderBy(ps => ps.Position)
@@ -102,6 +114,7 @@ namespace MyApi.Services
                         Id = ps.Song.Id,
                         Title = ps.Song.Title,
                         Album = ps.Song.Album,
+                        Duration = ps.Song.DurationSeconds,
                         DurationFormatted = ps.Song.DurationSeconds.HasValue
                             ? new Duration(ps.Song.DurationSeconds.Value).ToString()
                             : null,
@@ -110,13 +123,22 @@ namespace MyApi.Services
                         {
                             Id = a.Id,
                             Name = a.Name
-                        }).ToList()
+                        }).ToList(),
+                        AddedBy = ps.AddedBy != null ? new UserDto
+                        {
+                            Id = ps.AddedBy.Id,
+                            Username = ps.AddedBy.Username,
+                            Role = ps.AddedBy.Role,
+                            ProfileImage = ps.AddedBy.ProfileImage
+                        } : null,
+                        AddedAt = ps.AddedAt
                     }).ToList(),
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Role = u.Role
+                    Role = u.Role,
+                    ProfileImage = u.ProfileImage
                 }).ToList()
             });
         }

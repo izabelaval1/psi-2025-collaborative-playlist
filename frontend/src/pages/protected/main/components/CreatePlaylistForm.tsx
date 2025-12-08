@@ -2,15 +2,15 @@ import { useState } from "react";
 import { Sparkles, Globe, Lock, Clock } from "lucide-react";
 import type { Playlist } from "../../../../types/Playlist";
 import { PlaylistService } from "../../../../services/PlaylistService";
+import { authService } from "../../../../services/authService";
 import "./CreatePlaylistForm.scss";
 
 interface CreatePlaylistFormProps {
   onPlaylistCreated: (newPlaylist: Playlist) => void;
   onCancel: () => void;
-  hostId: number;
 }
 
-export default function CreatePlaylistForm({ onPlaylistCreated, onCancel, hostId }: CreatePlaylistFormProps) {
+export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: CreatePlaylistFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -33,17 +33,23 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel, hostId
       return;
     }
 
+    // Get current user
+    const currentUser = authService.getUser();
+    if (!currentUser) {
+      alert("You must be logged in to create a playlist");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
       formData.append("name", name.trim());
-      formData.append("hostId", hostId.toString());
+      formData.append("hostId", currentUser.id.toString()); // ✅ Use current user's ID
       if (description.trim()) formData.append("description", description.trim());
       if (imageFile) formData.append("CoverImage", imageFile);
 
       const newPlaylist = await PlaylistService.create(formData);
       
-      // Debug logging to see what we got back
       console.log("Created playlist response:", newPlaylist);
       console.log("Image URL:", newPlaylist.imageUrl);
       
