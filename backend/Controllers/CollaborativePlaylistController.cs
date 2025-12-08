@@ -6,16 +6,13 @@ namespace MyApi.Controllers
     [Route("api/collaborative")]
     public class CollaborativePlaylistController : ControllerBase
     {
-
-        
         private readonly ICollaborativePlaylistService _collaborativeService;
 
         public CollaborativePlaylistController(ICollaborativePlaylistService collaborativeService)
         {
             _collaborativeService = collaborativeService;
         }
-
-
+        
         //  GET: api/playlists/{playlistId}/collaborators
         //  Gauti visus playlisto collaborators
 

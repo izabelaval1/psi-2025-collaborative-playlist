@@ -7,12 +7,16 @@ import type { Playlist } from "../../../../types/Playlist";
 interface RecentPlaylistsProps {
   playlists: Playlist[];
   onPlaylistClick?: (playlist: Playlist) => void;
+  onCreateClick?: () => void;
 }
 
-export default function RecentPlaylists({ playlists, onPlaylistClick }: RecentPlaylistsProps) {
-  
+export default function RecentPlaylists({ 
+  playlists, 
+  onPlaylistClick,
+  onCreateClick 
+}: RecentPlaylistsProps) {
   const recentPlaylists = [...playlists]
-    .sort((a, b) => b.id - a.id) // Newest playlists first
+    .sort((a, b) => b.id - a.id)
     .slice(0, 3);
 
   return (
@@ -32,7 +36,7 @@ export default function RecentPlaylists({ playlists, onPlaylistClick }: RecentPl
       </div>
 
       <div className="recent-playlists__grid">
-        <AddPlaylistCard />
+        <AddPlaylistCard onClick={onCreateClick} />
         
         {recentPlaylists.map((playlist) => (
           <PlaylistCard

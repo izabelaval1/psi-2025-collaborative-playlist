@@ -10,6 +10,7 @@ import { authService } from "../services/authService";
 import Temp from "../pages/protected/temp/Temp";
 import Settings from '../pages/public/settings/settingsPage';
 import HomePage from "../pages/protected/main/HomePage";
+import PlaylistDetailPage from "../pages/protected/main/PlaylistDetailPage";
 
 export default function AppRoutes() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function AppRoutes() {
           element={isAuthenticated ? <Navigate to="/main" /> : <RegisterPage />}
         />
 
-        {/* Protected route */}
+        {/* Protected routes */}
         <Route
           path="/main"
           element={
@@ -65,6 +66,15 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <HomePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/playlist/:id"
+          element={
+            <ProtectedRoute>
+              <PlaylistDetailPage />
             </ProtectedRoute>
           }
         />
