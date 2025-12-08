@@ -8,4 +8,7 @@ export interface SongDto {
   durationFormatted?: string;
   position?: number;
   artists: ArtistDto[];
+  
+  spotifyId: string;
+  spotifyUri: string;
 }

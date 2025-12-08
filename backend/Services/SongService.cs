@@ -1,8 +1,9 @@
+using System.Text.Json;
 using MyApi.Models;
 using MyApi.Dtos;
 using MyApi.Utils;
 using MyApi.Repositories;
-
+using MyApi.Services;
 
 namespace MyApi.Services
 {
@@ -10,12 +11,17 @@ namespace MyApi.Services
     {
         private readonly ISongRepository _songRepository;
         private readonly IPlaylistRepository _playlistRepository;
+        private readonly ISpotifyService _spotifyService;
         private readonly GenericConverter<Song, SongDto> _converter;
 
-        public SongService(ISongRepository songRepository, IPlaylistRepository playlistRepository)
+        public SongService(
+            ISongRepository songRepository,
+            IPlaylistRepository playlistRepository,
+            ISpotifyService spotifyService)
         {
             _songRepository = songRepository;
             _playlistRepository = playlistRepository;
+            _spotifyService = spotifyService;
             _converter = new GenericConverter<Song, SongDto>();
         }
 
@@ -30,6 +36,8 @@ namespace MyApi.Services
                 Album = s.Album,
                 DurationMs = s.DurationSeconds.HasValue ? s.DurationSeconds.Value * 1000 : null,
                 DurationFormatted = s.DurationSeconds.HasValue ? new Duration(s.DurationSeconds.Value).ToString() : null,
+                SpotifyId = s.SpotifyId,
+                SpotifyUri = s.SpotifyUri,
                 Artists = s.Artists.Select(a => new ArtistDto { Id = a.Id, Name = a.Name }).ToList()
             });
         }
@@ -46,6 +54,8 @@ namespace MyApi.Services
                 Album = x.Album,
                 DurationMs = x.DurationSeconds.HasValue ? x.DurationSeconds.Value * 1000 : null,
                 DurationFormatted = x.DurationSeconds.HasValue ? new Duration(x.DurationSeconds.Value).ToString() : null,
+                SpotifyId = x.SpotifyId,
+                SpotifyUri = x.SpotifyUri,
                 Artists = x.Artists.Select(a => new ArtistDto { Id = a.Id, Name = a.Name }).ToList()
             });
         }
@@ -64,29 +74,56 @@ namespace MyApi.Services
             var playlist = await _playlistRepository.GetByIdWithDetailsAsync(request.PlaylistId);
             if (playlist == null)
                 return (false, $"Playlist with ID {request.PlaylistId} not found.", null);
+            if (string.IsNullOrEmpty(request.SpotifyId))
+            {
+                return (false, "SpotifyId is required to add a track.", null);
+            }
 
-            var artistNames = request.ArtistNames
-                .Where(a => !string.IsNullOrWhiteSpace(a))
-                .Select(a => a.Trim())
-                .ToList();
+            // Fetch track details from Spotify
+            var (fetchSuccess, fetchError, trackDetails) = await _spotifyService.GetTrackDetails(request.SpotifyId);
 
+            if (!fetchSuccess || trackDetails == null)
+            {
+                return (false, $"Failed to retrieve song details from Spotify: {fetchError}", null);
+            }
+
+            if (string.IsNullOrEmpty(trackDetails.SpotifyId))
+            {
+                return (false, "Spotify returned invalid track ID.", null);
+            }
+
+            if (string.IsNullOrEmpty(trackDetails.SpotifyUri))
+            {
+                return (false, "Spotify returned invalid track URI.", null);
+            }
+
+            // Extract data with null-safety
+            var artistNames = trackDetails.ArtistNames ?? new List<string>();
+            
             int? durationSeconds = null;
-            if (request.DurationMs.HasValue)
-                durationSeconds = (int)(request.DurationMs.Value / 1000);
+            if (trackDetails.DurationMs.HasValue)
+                durationSeconds = (int)(trackDetails.DurationMs.Value / 1000);
 
-            // užtikriname dainą + atlikėjus per repo
+            var spotifyId = trackDetails.SpotifyId;
+            var spotifyUri = trackDetails.SpotifyUri;
+            var album = trackDetails.AlbumInfo?.Name; // Safely access nested property
+
+            // Save to database
             var song = await _songRepository.EnsureSongWithArtistsAsync(
-                title: request.Title,
-                album: request.Album,
+                title: trackDetails.Title,
+                album: album,
                 durationSeconds: durationSeconds,
-                artistNames: artistNames
+                artistNames: artistNames,
+                spotifyId: spotifyId,
+                spotifyUri: spotifyUri
             );
 
-            // ar jau yra grojaraštyje?
+            // Check if song already in playlist
             var already = playlist.PlaylistSongs.Any(ps => ps.SongId == song.Id);
             if (already)
                 return (false, "This song is already in the playlist.", null);
 
+            // Add to playlist
             var nextPos = playlist.PlaylistSongs.NextPosition();
             var playlistSong = new PlaylistSong
             {

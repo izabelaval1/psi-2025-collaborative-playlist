@@ -48,23 +48,28 @@ namespace MyApi.Services
                     Username = p.Host.Username,
                     Role = p.Host.Role
                 } : null,
+
                 Songs = p.PlaylistSongs
-                    .OrderBy(ps => ps.Position)
-                    .Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        DurationFormatted = ps.Song.DurationSeconds.HasValue
-                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                            : null,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
-                        {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+    .OrderBy(ps => ps.Position)
+    .Select(ps => new SongDto
+    {
+        Id = ps.Song.Id,
+        Title = ps.Song.Title,
+        Album = ps.Song.Album,
+        DurationFormatted = ps.Song.DurationSeconds.HasValue
+            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+            : null,
+        Position = ps.Position,
+
+        SpotifyId = ps.Song.SpotifyId,
+        SpotifyUri = ps.Song.SpotifyUri,
+
+        Artists = ps.Song.Artists.Select(a => new ArtistDto
+        {
+            Id = a.Id,
+            Name = a.Name
+        }).ToList()
+    }).ToList(),
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
@@ -95,23 +100,28 @@ namespace MyApi.Services
                     Username = p.Host.Username,
                     Role = p.Host.Role
                 } : null,
+
                 Songs = p.PlaylistSongs
-                    .OrderBy(ps => ps.Position)
-                    .Select(ps => new SongDto
-                    {
-                        Id = ps.Song.Id,
-                        Title = ps.Song.Title,
-                        Album = ps.Song.Album,
-                        DurationFormatted = ps.Song.DurationSeconds.HasValue
-                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-                            : null,
-                        Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
-                        {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList()
-                    }).ToList(),
+    .OrderBy(ps => ps.Position)
+    .Select(ps => new SongDto
+    {
+        Id = ps.Song.Id,
+        Title = ps.Song.Title,
+        Album = ps.Song.Album,
+        DurationFormatted = ps.Song.DurationSeconds.HasValue
+            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+            : null,
+        Position = ps.Position,
+
+        SpotifyId = ps.Song.SpotifyId,
+        SpotifyUri = ps.Song.SpotifyUri,
+
+        Artists = ps.Song.Artists.Select(a => new ArtistDto
+        {
+            Id = a.Id,
+            Name = a.Name
+        }).ToList()
+    }).ToList(),
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,

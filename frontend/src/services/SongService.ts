@@ -1,9 +1,7 @@
 //handles Spotify search and adding songs to a playlist.
 
-import type { Track} from "../types/Spotify";
+import type { Track } from "../types/Spotify";
 
-
-// SongService.ts
 const BASE_URL = "http://localhost:5000/api";
 
 export const songService = {
@@ -20,13 +18,12 @@ export const songService = {
       Title: track.name,
       Album: track.album?.name ?? null,
       DurationMs: track.duration_ms,
-      // svarbiausia: siųsti masyvą, o ne vieną string
       ArtistNames: track.artists.map(a => a.name),
-      // Url – BE nenaudoja; gali palikti arba išmesti
-      // Url: track.external_urls.spotify,
+      
+      SpotifyId: track.id,
+      SpotifyUri: track.uri,
     };
 
-    // Jei projekte aktyvus SongsController (plural), pakeisk į /Songs/add-to-playlist
     const res = await fetch(`${BASE_URL}/song/add-to-playlist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
