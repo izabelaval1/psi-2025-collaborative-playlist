@@ -16,13 +16,7 @@ export interface Track {
   album: Album;
   external_urls: { spotify: string };
   duration_ms: number;
-}
-
-export interface Song {
-  Title: string;
-  Artist: string;
-  Album: string;
-  Url: string;
+  uri: string;
 }
 
 export interface SpotifyResponse {

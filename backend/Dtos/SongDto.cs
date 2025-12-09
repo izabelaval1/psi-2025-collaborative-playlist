@@ -7,8 +7,11 @@ namespace MyApi.Dtos
         public string? Album { get; set; }
         public int? DurationMs { get; set; }
         public string? DurationFormatted { get; set; }
-
         public int? Position { get; set; }
+
+        public string SpotifyId { get; set; } = null!;
+        public string SpotifyUri { get; set; } = null!;
+        
         public List<ArtistDto> Artists { get; set; } = new();
     }
 }

@@ -4,11 +4,11 @@ namespace MyApi.Dtos
     {
         public int PlaylistId { get; set; }
         public string Title { get; set; } = null!;
-        public List<string> ArtistNames { get; set; } = new(); // replaces single Artist
+        public List<string> ArtistNames { get; set; } = new();
         public string? Album { get; set; }
         public string? Url { get; set; }
-
-        // Needed for Duration
         public int? DurationMs { get; set; }
+        public string SpotifyId { get; set; } = null!;
+        public string SpotifyUri { get; set; } = null!;
     }
 }

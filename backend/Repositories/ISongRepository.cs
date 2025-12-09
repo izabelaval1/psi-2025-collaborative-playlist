@@ -7,7 +7,7 @@ namespace MyApi.Repositories
         Task<IEnumerable<Song>> GetAllAsync();
         Task<Song?> GetByIdAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task AddAsync(Song song);
+        Task AddAsync(Song song);gi
         Task UpdateAsync(Song song);
         Task DeleteAsync(Song song);
 
@@ -21,6 +21,8 @@ namespace MyApi.Repositories
             string title,
             string? album,
             int? durationSeconds,
-            IEnumerable<string> artistNames);
+            IEnumerable<string> artistNames,
+            string spotifyId,
+            string spotifyUri);
     }
 }
