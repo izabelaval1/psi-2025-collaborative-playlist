@@ -30,10 +30,26 @@ namespace MyApi.Services
         // ============================================================
         //  GET: Gauti visus grojaraščius
         // ============================================================
-        public async Task<IEnumerable<PlaylistResponseDto>> GetAllAsync()
+        public async Task<IEnumerable<PlaylistResponseDto>> GetAllAsync(int? requesterUserId = null)
         {
             var playlists = await _playlistRepository.GetAllAsync();
             var playlistsList = playlists.ToList();
+
+            IEnumerable<Playlist> accessible = playlistsList;
+
+            if (requesterUserId.HasValue)
+            {
+                var uid = requesterUserId.Value;
+                playlistsList = playlistsList
+                    .Where(p => 
+                        // User is the host
+                        (p.HostId.HasValue && p.HostId.Value == uid) 
+                        || 
+                        // OR user is a collaborator
+                        (p.Users != null && p.Users.Any(u => u.Id == uid))
+                    )
+                    .ToList();
+            }
 
             return _converter.ConvertAll(playlistsList, p => new PlaylistResponseDto
             {

@@ -11,7 +11,6 @@ import Temp from "../pages/protected/temp/Temp";
 import Settings from '../pages/public/settings/settingsPage';
 import HomePage from "../pages/protected/main/HomePage";
 import PlaylistDetailPage from "../pages/protected/main/PlaylistDetailPage";
-import DebugAddedBy from "../pages/DebugPage";
 
 export default function AppRoutes() {
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/debug" element={<DebugAddedBy />} />
+  
       
       <Route element={<MainLayout isAuthenticated={isAuthenticated} username={user?.username} onLogout={handleLogout} />}>
 

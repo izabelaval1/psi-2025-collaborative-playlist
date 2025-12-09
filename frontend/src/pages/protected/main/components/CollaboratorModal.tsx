@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { UserPlus, AlertCircle } from "lucide-react";
+import { UserPlus, AlertCircle, Search } from "lucide-react";
 import { PlaylistService } from "../../../../services/PlaylistService";
 import "./CollaboratorModal.scss";
 
@@ -27,15 +27,16 @@ export default function CollaboratorModal({
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Search users as they type
+  // ✅ Live search - triggers as user types (with debounce)
   useEffect(() => {
     if (username.trim().length < 2) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
+    setIsSearching(true);
     const timeoutId = setTimeout(async () => {
-      setIsSearching(true);
       try {
         const results = await PlaylistService.searchUsers(username);
         setSearchResults(results);
@@ -45,7 +46,7 @@ export default function CollaboratorModal({
       } finally {
         setIsSearching(false);
       }
-    }, 300); // Debounce 300ms
+    }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
   }, [username]);
@@ -72,16 +73,13 @@ export default function CollaboratorModal({
     } catch (err) {
       console.error("Failed to add collaborator:", err);
       
-      // Extract clean error message
       let errorMessage = "Failed to add collaborator.";
       
       if (err instanceof Error) {
-        // Try to parse JSON error response
         try {
           const errorData = JSON.parse(err.message);
           errorMessage = errorData.message || errorMessage;
         } catch {
-          // If not JSON, use the error message as is
           errorMessage = err.message;
         }
       }
@@ -109,7 +107,7 @@ export default function CollaboratorModal({
         </div>
 
         <p className="collaborator-modal__description">
-          Search for a user to invite as a collaborator
+          Start typing to search for users. Click on a result to add them instantly.
         </p>
 
         {error && (
@@ -120,46 +118,67 @@ export default function CollaboratorModal({
         )}
 
         <div className="collaborator-modal__search-wrapper">
-          <input
-            type="text"
-            placeholder="Type username..."
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="collaborator-modal__input"
-            autoFocus
-          />
+          <div className="collaborator-modal__input-container">
+            <Search size={18} className="collaborator-modal__search-icon" />
+            <input
+              type="text"
+              placeholder="Type username..."
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="collaborator-modal__input"
+              autoFocus
+            />
+          </div>
 
-          {/* Search results dropdown */}
-          {searchResults.length > 0 && (
+          {/* Live search results dropdown */}
+          {username.trim().length >= 2 && (
             <div className="collaborator-modal__results">
-              {searchResults.map((user) => (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => handleAddCollaborator(user.username)}
-                  className="collaborator-modal__result-item"
-                >
-                  <div className="collaborator-modal__result-username">
-                    {user.username}
-                  </div>
-                  <div className="collaborator-modal__result-hint">
-                    Click to add
-                  </div>
-                </button>
-              ))}
+              {isSearching ? (
+                <div className="collaborator-modal__searching">
+                  <div className="collaborator-modal__spinner"></div>
+                  <span>Searching users...</span>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <>
+                  {searchResults.map((user) => (
+                    <button
+                      key={user.id}
+                      type="button"
+                      onClick={() => handleAddCollaborator(user.username)}
+                      className="collaborator-modal__result-item"
+                      disabled={isAdding}
+                    >
+                      <div className="collaborator-modal__result-avatar">
+                        {user.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="collaborator-modal__result-info">
+                        <div className="collaborator-modal__result-username">
+                          {user.username}
+                        </div>
+                        <div className="collaborator-modal__result-hint">
+                          Click to add as collaborator
+                        </div>
+                      </div>
+                      <div className="collaborator-modal__add-icon">+</div>
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="collaborator-modal__no-results">
+                  <Search size={24} />
+                  <p>No users found matching "{username}"</p>
+                  <p className="collaborator-modal__no-results-hint">
+                    Try a different search term
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          {isSearching && (
-            <div className="collaborator-modal__searching">
-              Searching...
-            </div>
-          )}
-
-          {username.trim().length >= 2 && !isSearching && searchResults.length === 0 && (
-            <div className="collaborator-modal__no-results">
-              No users found matching "{username}"
+          {username.trim().length > 0 && username.trim().length < 2 && (
+            <div className="collaborator-modal__hint">
+              Type at least 2 characters to search
             </div>
           )}
         </div>
@@ -169,16 +188,24 @@ export default function CollaboratorModal({
             type="button"
             onClick={onClose}
             className="collaborator-modal__btn collaborator-modal__btn--secondary"
+            disabled={isAdding}
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => handleAddCollaborator()}
-            disabled={isAdding || !username.trim()}
+            disabled={isAdding || !username.trim() || username.trim().length < 2}
             className="collaborator-modal__btn collaborator-modal__btn--primary"
           >
-            {isAdding ? "Adding..." : "Add Collaborator"}
+            {isAdding ? (
+              <>
+                <div className="collaborator-modal__spinner collaborator-modal__spinner--small"></div>
+                Adding...
+              </>
+            ) : (
+              "Add Collaborator"
+            )}
           </button>
         </div>
       </div>

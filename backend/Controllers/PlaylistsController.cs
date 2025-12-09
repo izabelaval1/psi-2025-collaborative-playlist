@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using MyApi.Dtos;
 using MyApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MyApi.Controllers
 {
@@ -15,10 +17,19 @@ namespace MyApi.Controllers
             _playlistService = playlistService; //DI
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetPlaylists()
         {
-            var playlists = await _playlistService.GetAllAsync();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"[DEBUG] GetPlaylists called. userIdClaim={userIdClaim}");
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized("Invalid token");
+            }
+
+            var playlists = await _playlistService.GetAllAsync(userId);
+            Console.WriteLine($"[DEBUG] GetPlaylists returning {playlists?.Count() ?? 0} playlists for user {userId}");
             return Ok(playlists);
         }
 
