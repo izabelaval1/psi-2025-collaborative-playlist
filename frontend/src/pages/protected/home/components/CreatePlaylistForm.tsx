@@ -131,56 +131,6 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: Crea
 
       <div className="create-playlist-form__section">
         <div className="create-playlist-form__section-header">
-          <h3 className="create-playlist-form__section-title">Visibility</h3>
-          <p className="create-playlist-form__section-subtitle">Control who can find and join</p>
-        </div>
-        <div className="create-playlist-form__toggle-group">
-          <button
-            type="button"
-            className={`create-playlist-form__toggle ${isPublic ? 'create-playlist-form__toggle--active' : ''}`}
-            onClick={() => setIsPublic(true)}
-          >
-            <Globe size={18} />
-            <span>Public</span>
-          </button>
-          <button
-            type="button"
-            className={`create-playlist-form__toggle ${!isPublic ? 'create-playlist-form__toggle--active' : ''}`}
-            onClick={() => setIsPublic(false)}
-          >
-            <Lock size={18} />
-            <span>Private (link only)</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="create-playlist-form__section">
-        <div className="create-playlist-form__section-header">
-          <h3 className="create-playlist-form__section-title">Collaboration</h3>
-          <p className="create-playlist-form__section-subtitle">What can collaborators do?</p>
-        </div>
-        <div className="create-playlist-form__checkboxes">
-          <label className="create-playlist-form__checkbox">
-            <input
-              type="checkbox"
-              checked={allowReorder}
-              onChange={(e) => setAllowReorder(e.target.checked)}
-            />
-            <span>Allow collaborators to reorder tracks</span>
-          </label>
-          <label className="create-playlist-form__checkbox">
-            <input
-              type="checkbox"
-              checked={allowRemove}
-              onChange={(e) => setAllowRemove(e.target.checked)}
-            />
-            <span>Allow collaborators to remove tracks</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="create-playlist-form__section">
-        <div className="create-playlist-form__section-header">
           <h3 className="create-playlist-form__section-title">Invite collaborators</h3>
           <p className="create-playlist-form__section-subtitle">You can add more later</p>
         </div>
@@ -205,10 +155,6 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: Crea
         </p>
       </div>
 
-      <div className="create-playlist-form__info">
-        <Clock size={16} />
-        <span>Autosaves as draft until you add your first track.</span>
-      </div>
 
       <div className="create-playlist-form__actions">
         <button

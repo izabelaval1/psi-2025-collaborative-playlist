@@ -46,8 +46,7 @@ export default function PlaylistsPage() {
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query) ||
-          p.host?.username.toLowerCase().includes(query)
+          p.description?.toLowerCase().includes(query) 
       );
     }
 
