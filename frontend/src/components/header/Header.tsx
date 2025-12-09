@@ -17,10 +17,10 @@ export default function Header({ isAuthenticated, username, onLogout }: HeaderPr
   ];
 
   const privateLinks = [
-    { to: "/main", label: "Home" },
+    { to: "/home", label: "Home" },
     { to: "/playlists", label: "Playlists" },
     { to: "/settings", label: "Settings" },
-    { to: "/temp", label: "Temp" },
+    { to: "/live-sessions", label: "Live Sessions" },
   ];
 
   const links = isAuthenticated ? privateLinks : publicLinks;
