@@ -14,9 +14,6 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: Crea
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isPublic, setIsPublic] = useState(true);
-  const [allowReorder, setAllowReorder] = useState(false);
-  const [allowRemove, setAllowRemove] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,7 +30,6 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: Crea
       return;
     }
 
-    // Get current user
     const currentUser = authService.getUser();
     if (!currentUser) {
       alert("You must be logged in to create a playlist");
@@ -44,7 +40,7 @@ export default function CreatePlaylistForm({ onPlaylistCreated, onCancel }: Crea
     try {
       const formData = new FormData();
       formData.append("name", name.trim());
-      formData.append("hostId", currentUser.id.toString()); // ✅ Use current user's ID
+      formData.append("hostId", currentUser.id.toString());
       if (description.trim()) formData.append("description", description.trim());
       if (imageFile) formData.append("CoverImage", imageFile);
 
