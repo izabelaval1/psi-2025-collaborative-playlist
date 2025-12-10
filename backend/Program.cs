@@ -39,11 +39,12 @@ builder.Services.AddScoped<ICollaborativePlaylistService, CollaborativePlaylistS
 //  CORS — leidžiam frontend'ui jungtis prie API
 // ===================================================
 
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:5173";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(frontendUrl)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -89,6 +90,16 @@ builder.Services.AddAuthorization();
 //  Sukuriam WebApplication objektą
 // ===================================================
 var app = builder.Build();
+
+// ===================================================
+//  AUTOMATINĖS EF MIGRACIJOS
+// ===================================================
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PlaylistAppContext>();
+    db.Database.Migrate();
+}
+
 
 // ===================================================
 //  Middleware pipeline (užklausų apdorojimo seka)
