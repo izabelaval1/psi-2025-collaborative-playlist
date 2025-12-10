@@ -21,6 +21,8 @@ namespace MyApi.Repositories
             string title,
             string? album,
             int? durationSeconds,
-            IEnumerable<string> artistNames);
+            IEnumerable<string> artistNames,
+            string spotifyId,
+            string spotifyUri);
     }
 }

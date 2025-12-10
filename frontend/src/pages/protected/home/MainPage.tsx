@@ -30,7 +30,7 @@ export default function MainPage() {
   const handlePlaylistsLoaded = (data: Playlist[]) => setPlaylists(data);
 
   return (
-    <div className="main-page flex h-screen bg-neutral-950 text-white">
+    <>
       <aside className="left-side w-48 p-4 border-r border-neutral-800">
         <button
           data-testid="new-playlist-btn"
@@ -42,11 +42,8 @@ export default function MainPage() {
 
         <PlaylistList
           ref={playlistListRef}
-          onSelect={(p) =>
-            setSelectedPlaylist(p as unknown as PlaylistResponseDto)
-          }
-          onPlaylistsLoaded={handlePlaylistsLoaded}
-        />
+          onSelect={(p) => setSelectedPlaylist(p as unknown as PlaylistResponseDto)}
+          onPlaylistsLoaded={handlePlaylistsLoaded} />
       </aside>
 
       <div className="vDivider w-px bg-neutral-800"></div>
@@ -56,8 +53,7 @@ export default function MainPage() {
         <div className="flex-1 px-6 pb-6 overflow-hidden mt-4">
           <PlaylistDisplay
             playlist={selectedPlaylist}
-            onSongRemoved={handleSongListChanged}
-          />
+            onSongRemoved={handleSongListChanged} />
         </div>
       </div>
 
@@ -67,10 +63,9 @@ export default function MainPage() {
           onPlaylistCreated={async () => {
             setIsModalOpen(false);
             await playlistListRef.current?.refresh();
-          }}
-        />
+          } } />
       )}
-    </div>
+    </>
   );
 }
 

@@ -12,4 +12,7 @@ export interface SongDto {
 
   addedBy?: UserDto;
   addedAt?: string;  
+  
+  spotifyId: string;
+  spotifyUri: string;
 }

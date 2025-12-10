@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyApi.Repositories;
 using MyApi.Data;
-using MyApi.Services; 
+using MyApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -38,11 +38,12 @@ builder.Services.AddScoped<ICollaborativePlaylistService, CollaborativePlaylistS
 // ===================================================
 //  CORS — leidžiam frontend'ui jungtis prie API
 // ===================================================
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // React app URL
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -97,9 +98,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles();  
+app.UseStaticFiles();
 app.UseRouting();
-app.UseCors("AllowFrontend"); 
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -63,32 +63,65 @@ namespace MyApi.Repositories
             string title,
             string? album,
             int? durationSeconds,
-            IEnumerable<string> artistNames)
+            IEnumerable<string> artistNames,
+            string spotifyId,
+            string spotifyUri)
         {
-            var existing = await FindByTitleAndAlbumAsync(title, album);
-            if (existing != null) return existing;
+            var existing = await _db.Songs
+                .Include(s => s.Artists)
+                .FirstOrDefaultAsync(s => s.SpotifyId == spotifyId);
 
+            if (existing != null)
+            {
+                // 🔑 Ensure fields are updated
+                existing.Title = title;
+                existing.Album = album;
+                existing.DurationSeconds = durationSeconds;
+
+                if (string.IsNullOrEmpty(existing.SpotifyUri) || existing.SpotifyUri != spotifyUri)
+                    existing.SpotifyUri = spotifyUri;
+
+                // Update artists if needed
+                var names = artistNames
+                    .Where(a => !string.IsNullOrWhiteSpace(a))
+                    .Select(a => a.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var name in names)
+                {
+                    if (!existing.Artists.Any(a => a.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var artist = await _db.Artists.FirstOrDefaultAsync(a => a.Name == name)
+                                     ?? new Artist { Name = name };
+                        existing.Artists.Add(artist);
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+                return existing;
+            }
+
+            // Otherwise create new
             var song = new Song
             {
                 Title = title,
                 Album = album,
-                DurationSeconds = durationSeconds
+                DurationSeconds = durationSeconds,
+                SpotifyId = spotifyId,
+                SpotifyUri = spotifyUri
             };
 
-            // pririšame/užtikriname Artist įrašus
-            var names = artistNames
+            var newNames = artistNames
                 .Where(a => !string.IsNullOrWhiteSpace(a))
                 .Select(a => a.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            foreach (var name in names)
+            foreach (var name in newNames)
             {
-                var artist = await _db.Artists.FirstOrDefaultAsync(a => a.Name == name);
-                if (artist == null)
-                {
-                    artist = new Artist { Name = name };
-                }
+                var artist = await _db.Artists.FirstOrDefaultAsync(a => a.Name == name)
+                             ?? new Artist { Name = name };
                 song.Artists.Add(artist);
             }
 
@@ -97,5 +130,6 @@ namespace MyApi.Repositories
 
             return song;
         }
+
     }
 }

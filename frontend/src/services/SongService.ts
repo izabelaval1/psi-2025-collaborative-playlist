@@ -12,7 +12,6 @@ export const songService = {
   },
 
   async addToPlaylist(track: Track, playlistId: number) {
-    // Get current user
     const currentUser = authService.getUser();
     
     const songData = {
@@ -21,7 +20,13 @@ export const songService = {
       Album: track.album?.name ?? null,
       DurationMs: track.duration_ms,
       ArtistNames: track.artists.map(a => a.name),
-      AddedByUserId: currentUser?.id || null // ADD THIS
+      
+      //track who added the song
+      AddedByUserId: currentUser?.id,
+      
+      //Spotify integration
+      SpotifyId: track.id,
+      SpotifyUri: track.uri,
     };
 
     const res = await fetch(`${BASE_URL}/song/add-to-playlist`, {

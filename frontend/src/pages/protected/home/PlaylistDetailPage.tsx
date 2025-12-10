@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, Shuffle, Save, Trash2, Clock, Music2, Edit3, Check, X, UserPlus, Search, Users } from "lucide-react";
+import { Play, Pause, Shuffle, Search, Clock, Music2, Edit3, Check, X, UserPlus, Users , Trash2} from "lucide-react";
 import { PlaylistService } from "../../../services/PlaylistService";
 import { songService } from "../../../services/SongService";
 import { authService } from "../../../services/authService";
+import { useSpotifyPlayer } from "../../../context/SpotifyPlayerContext";
 import CollaboratorModal from "./components/CollaboratorModal";
 import type { PlaylistResponseDto } from "../../../types/PlaylistResponseDto";
 import type { Track } from "../../../types/Spotify";
@@ -26,8 +27,16 @@ export default function PlaylistDetailPage() {
   const [searchResults, setSearchResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Collaborator state
   const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+
+  const Equalizer = () => (
+    <div className="equalizer">
+      <span></span><span></span><span></span>
+    </div>
+  );
+  
+  // Spotify player integration
+  const { play, pause, playerState, spotifyToken, deviceId } = useSpotifyPlayer();
 
   const currentUser = authService.getUser();
 
@@ -67,6 +76,39 @@ export default function PlaylistDetailPage() {
     } catch (err) {
       console.error("Failed to remove song:", err);
       alert("Failed to remove song");
+    }
+  };
+
+  const handlePlaySong = async (uri: string) => {
+    if (!uri) {
+      alert("Cannot play - missing Spotify URI");
+      return;
+    }
+
+    if (!spotifyToken || !deviceId || !playerState.isReady) {
+      alert("Spotify player is not ready. Please connect your Spotify account.");
+      return;
+    }
+
+    const isCurrent = playerState.currentTrackUri === uri;
+
+    if (isCurrent && playerState.isPlaying) {
+      await pause();
+      return;
+    }
+
+    await play(uri, "track");
+  };
+
+  const handlePlayPlaylist = async () => {
+    if (!playlist || playlist.songs.length === 0) {
+      alert("No songs to play");
+      return;
+    }
+
+    const firstSong = playlist.songs[0];
+    if (firstSong.spotifyUri) {
+      await handlePlaySong(firstSong.spotifyUri);
     }
   };
 
@@ -259,7 +301,12 @@ export default function PlaylistDetailPage() {
       </div>
 
       <div className="playlist-detail-page__controls">
-        <button type="button" className="playlist-detail-page__btn playlist-detail-page__btn--play">
+        <button 
+          type="button" 
+          className="playlist-detail-page__btn playlist-detail-page__btn--play"
+          onClick={handlePlayPlaylist}
+          disabled={!spotifyToken || !deviceId || !playerState.isReady}
+        >
           <Play size={20} fill="currentColor" />
           Play
         </button>
@@ -402,43 +449,69 @@ export default function PlaylistDetailPage() {
           </div>
         ) : (
           <div className="playlist-detail-page__tracks">
-            {getSortedSongs().map((song, index) => (
-              <div key={song.id} className="playlist-detail-page__track">
-                <div className="playlist-detail-page__track-number">
-                  {index + 1}
-                </div>
+            {getSortedSongs().map((song, index) => {
+              const isPlaying = playerState.currentTrackUri === song.spotifyUri;
+              const hasValidUri = song.spotifyUri && song.spotifyUri !== "";
 
-                <div className="playlist-detail-page__track-info">
-                  <div className="playlist-detail-page__track-name">{song.title}</div>
-                </div>
+              return (
+                <div key={song.id} className="playlist-detail-page__track">
+                  <div className="playlist-detail-page__track-number">
+                  {isPlaying && playerState.isPlaying ? (
+                    <Equalizer />
+                  ) : (
+                    index + 1
+                    )}
 
-                <div className="playlist-detail-page__track-artist">
-                  {song.artists?.map((a) => a.name).join(", ") || "Unknown"}
-                </div>
+                  </div>
 
-                <div className="playlist-detail-page__track-album">
-                  {song.album || "-"}
-                </div>
+                  <div className={`playlist-detail-page__track-info ${isPlaying ? 'playlist-detail-page__track-info--playing' : ''}`}>
+                    <div className="playlist-detail-page__track-name">{song.title}</div>
+                  </div>
 
-                <div className="playlist-detail-page__track-added-by">
-                  {song.addedBy?.username || "Unknown"}
-                </div>
+                  <div className="playlist-detail-page__track-artist">
+                    {song.artists?.map((a) => a.name).join(", ") || "Unknown"}
+                  </div>
 
-                <div className="playlist-detail-page__track-duration">
-                  {song.durationFormatted || formatDuration(undefined, song.duration)}
-                </div>
+                  <div className="playlist-detail-page__track-album">
+                    {song.album || "-"}
+                  </div>
 
-                <button
-                  type="button"
-                  className="playlist-detail-page__track-delete"
-                  onClick={() => handleRemoveSong(song.id)}
-                  aria-label="Remove song"
-                  title="Remove song"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ))}
+                  <div className="playlist-detail-page__track-added-by">
+                    {song.addedBy?.username || "Unknown"}
+                  </div>
+
+                  <div className="playlist-detail-page__track-duration">
+                    {song.durationFormatted || formatDuration(undefined, song.duration)}
+                  </div>
+
+                  <div className="playlist-detail-page__track-actions">
+                    <button
+                      type="button"
+                      onClick={() => handlePlaySong(song.spotifyUri)}
+                      className="playlist-detail-page__track-play"
+                      disabled={!hasValidUri}
+                      title={hasValidUri ? (isPlaying && playerState.isPlaying ? "Pause" : "Play") : "No Spotify URI"}
+                    >
+                      {isPlaying && playerState.isPlaying ? (
+                        <Pause size={18} />
+                      ) : (
+                        <Play size={18} />
+                      )}
+                    </button>
+
+                    <button
+                    type="button"
+                    className="playlist-detail-page__track-delete"
+                    onClick={() => handleRemoveSong(song.id)}
+                    aria-label="Remove song"
+                    title="Remove song"
+                    ><Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                
+              );
+            })}
           </div>
         )}
       </div>

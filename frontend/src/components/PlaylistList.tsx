@@ -1,4 +1,5 @@
 // src/components/PlaylistList.tsx
+//playlist sidebar thingie
 import {
   useState,
   useEffect,

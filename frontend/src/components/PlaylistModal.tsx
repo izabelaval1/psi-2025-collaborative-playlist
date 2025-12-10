@@ -1,3 +1,4 @@
+//thingie for creating a playlist
 import CreatePlaylistForm from "./CreatePlaylist";
 import type { Playlist } from "../types/Playlist";
 

@@ -30,6 +30,10 @@ namespace MyApi.Services
         // ============================================================
         //  GET: Gauti visus grojaraščius
         // ============================================================
+
+                // ============================================================
+        //  GET: Gauti visus grojaraščius
+        // ============================================================
         public async Task<IEnumerable<PlaylistResponseDto>> GetAllAsync(int? requesterUserId = null)
         {
             var playlists = await _playlistRepository.GetAllAsync();
@@ -65,6 +69,7 @@ namespace MyApi.Services
                     Role = p.Host.Role,
                     ProfileImage = p.Host.ProfileImage
                 } : null,
+
                 Songs = p.PlaylistSongs
                     .OrderBy(ps => ps.Position)
                     .Select(ps => new SongDto
@@ -77,11 +82,8 @@ namespace MyApi.Services
                             ? new Duration(ps.Song.DurationSeconds.Value).ToString()
                             : null,
                         Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
-                        {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList(),
+                        
+                        //user tracking
                         AddedBy = ps.AddedBy != null ? new UserDto
                         {
                             Id = ps.AddedBy.Id,
@@ -89,8 +91,19 @@ namespace MyApi.Services
                             Role = ps.AddedBy.Role,
                             ProfileImage = ps.AddedBy.ProfileImage
                         } : null,
-                        AddedAt = ps.AddedAt
+                        AddedAt = ps.AddedAt,
+                        
+                        //Spotify integration
+                        SpotifyId = ps.Song.SpotifyId,
+                        SpotifyUri = ps.Song.SpotifyUri,
+                        
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
                     }).ToList(),
+                    
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
@@ -123,6 +136,7 @@ namespace MyApi.Services
                     Role = p.Host.Role,
                     ProfileImage = p.Host.ProfileImage
                 } : null,
+
                 Songs = p.PlaylistSongs
                     .OrderBy(ps => ps.Position)
                     .Select(ps => new SongDto
@@ -135,11 +149,8 @@ namespace MyApi.Services
                             ? new Duration(ps.Song.DurationSeconds.Value).ToString()
                             : null,
                         Position = ps.Position,
-                        Artists = ps.Song.Artists.Select(a => new ArtistDto
-                        {
-                            Id = a.Id,
-                            Name = a.Name
-                        }).ToList(),
+                        
+                        // From your branch - user tracking
                         AddedBy = ps.AddedBy != null ? new UserDto
                         {
                             Id = ps.AddedBy.Id,
@@ -147,8 +158,19 @@ namespace MyApi.Services
                             Role = ps.AddedBy.Role,
                             ProfileImage = ps.AddedBy.ProfileImage
                         } : null,
-                        AddedAt = ps.AddedAt
+                        AddedAt = ps.AddedAt,
+                        
+                        // From Emilija's branch - Spotify integration
+                        SpotifyId = ps.Song.SpotifyId,
+                        SpotifyUri = ps.Song.SpotifyUri,
+                        
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
                     }).ToList(),
+                    
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
