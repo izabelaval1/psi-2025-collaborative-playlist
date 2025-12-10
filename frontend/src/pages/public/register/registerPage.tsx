@@ -45,7 +45,7 @@ const RegisterPage = () => {
       await authService.register(values.username, values.password, values.confirmPassword);
 
       setMessage("Account created successfully!");
-      navigate("/main");  // redirect į main
+      navigate("/home");  
     } catch (err: any) {
       setMessage("");
       setErrors({ general: err.response?.data?.message || "Registration failed" });
