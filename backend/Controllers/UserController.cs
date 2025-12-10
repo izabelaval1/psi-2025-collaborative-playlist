@@ -14,10 +14,10 @@ namespace MyApi.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IUserService _userservice; 
+        private readonly IUserService _userservice;
         public UsersController(IUserService users) => _userservice = users;
 
-        [Authorize (Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -32,7 +32,7 @@ namespace MyApi.Controllers
         {
             // Naudojam ClaimTypes.NameIdentifier, nes taip generuojame token'ą
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
                 return Unauthorized("Invalid token");
@@ -40,7 +40,7 @@ namespace MyApi.Controllers
 
             var user = await _userservice.GetByIdAsync(userId);
             if (user == null) return NotFound();
-            
+
             return Ok(user);
         }
 
@@ -98,6 +98,26 @@ namespace MyApi.Controllers
             }
 
         }
+        [HttpGet("search")]
+
+        public async Task<IActionResult> SearchUsers([FromQuery] string q)
+        {
+            if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            {
+                return Ok(new List<object>());
+            }
+
+            var users = await _userservice.SearchUsersAsync(q);
+            
+            var results = users.Select(u => new { u.Id, u.Username });
+            
+            return Ok(results);
+        }
+
+        
     }
+    
+    
+
 
 }

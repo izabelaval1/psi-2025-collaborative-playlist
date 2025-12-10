@@ -3,9 +3,16 @@ export type Song = {
   title: string;
   album?: string;
   durationMs?: number;
-  duration?: number;
-  durationFormatted?: string;
-  artists: { id: number; name: string }[];
+  duration?: number; // jei backend grazina seconds (optional)
+  durationFormatted?: string; // jei backend grazina formatted string (optional)
+  artists: { id: number; name: string }[];  
+  addedBy?: {                // user who added the song
+    id: number;
+    username: string;
+    role?: string;
+    profileImage?: string;
+  };
+  addedAt?: string;
   spotifyId: string;
   spotifyUri: string;
 };

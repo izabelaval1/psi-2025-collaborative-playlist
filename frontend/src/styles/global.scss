@@ -1,0 +1,9 @@
+@use "base/variables" as *;
+
+html, body, #root {
+  background-color: $bg-main;
+  color: $foreground-main;
+  font-family: "Inter";
+  padding: 10px;
+}
+

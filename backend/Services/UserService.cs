@@ -16,7 +16,7 @@ namespace MyApi.Services
         public UserService(IUserRepository UserRepository)
         {
             _userRepository = UserRepository;
-           _converter = new GenericConverter<User, UserDto>();
+            _converter = new GenericConverter<User, UserDto>();
         }
 
 
@@ -31,7 +31,7 @@ namespace MyApi.Services
         public async Task<UserDto?> GetByIdAsync(int id)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) 
+            if (u == null)
             {
                 return null;
             }
@@ -41,7 +41,7 @@ namespace MyApi.Services
         public async Task<(bool Success, string? Error)> DeleteAsync(int id)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) 
+            if (u == null)
             {
                 return (false, "User not found");
             }
@@ -52,7 +52,7 @@ namespace MyApi.Services
         public async Task<(bool Success, string? Error)> ChangeRoleAsync(int id, UserRole newRole)
         {
             var u = await _userRepository.GetByIdAsync(id);
-            if (u == null) 
+            if (u == null)
             {
                 return (false, "User not found");
             }
@@ -101,7 +101,7 @@ namespace MyApi.Services
             // 4. Atnaujinam DB per repo
             var success = await _userRepository.UpdateProfileImageAsync(id, imagePath);
             if (!success)
-            throw new ArgumentException("Failed to update profile image.");
+                throw new ArgumentException("Failed to update profile image.");
 
             // 5. Atnaujinam user objektą ir grąžinam DTO
             user.ProfileImage = imagePath;
@@ -115,5 +115,25 @@ namespace MyApi.Services
             });
         }
 
+        public async Task<IEnumerable<UserDto>> SearchUsersAsync(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+                return Enumerable.Empty<UserDto>();
+
+            var users = await _userRepository.SearchByUsernameAsync(query);
+            var usersList = users.ToList();
+
+            return _converter.ConvertAll(usersList, u => new UserDto
+            {
+                Id = u.Id,
+                Username = u.Username,
+                Role = u.Role,
+                ProfileImage = u.ProfileImage
+            });
+        }
+
     }
+
+
+    
 }

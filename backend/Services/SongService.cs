@@ -34,7 +34,7 @@ namespace MyApi.Services
                 Id = s.Id,
                 Title = s.Title,
                 Album = s.Album,
-                DurationMs = s.DurationSeconds.HasValue ? s.DurationSeconds.Value * 1000 : null,
+                Duration = s.DurationSeconds.HasValue ? s.DurationSeconds.Value * 1000 : null,
                 DurationFormatted = s.DurationSeconds.HasValue ? new Duration(s.DurationSeconds.Value).ToString() : null,
                 SpotifyId = s.SpotifyId,
                 SpotifyUri = s.SpotifyUri,
@@ -52,7 +52,7 @@ namespace MyApi.Services
                 Id = x.Id,
                 Title = x.Title,
                 Album = x.Album,
-                DurationMs = x.DurationSeconds.HasValue ? x.DurationSeconds.Value * 1000 : null,
+                Duration = x.DurationSeconds.HasValue ? x.DurationSeconds.Value * 1000 : null,
                 DurationFormatted = x.DurationSeconds.HasValue ? new Duration(x.DurationSeconds.Value).ToString() : null,
                 SpotifyId = x.SpotifyId,
                 SpotifyUri = x.SpotifyUri,
@@ -129,7 +129,9 @@ namespace MyApi.Services
             {
                 PlaylistId = playlist.Id,
                 SongId = song.Id,
-                Position = nextPos
+                Position = nextPos,
+                AddedByUserId = request.AddedByUserId,
+                AddedAt = DateTime.UtcNow 
             };
 
             await _playlistRepository.AddPlaylistSongAsync(playlistSong);

@@ -11,5 +11,6 @@ namespace MyApi.Services
         Task<(bool Success, string? Error)> ChangeRoleAsync(int id, UserRole newRole);
 
         Task<UserDto?> UpdateProfileImageAsync(int userId, IFormFile imageFile, string webRootPath);
+        Task<IEnumerable<UserDto>> SearchUsersAsync(string query);
     }
 }

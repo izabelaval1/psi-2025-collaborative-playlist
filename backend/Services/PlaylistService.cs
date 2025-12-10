@@ -30,10 +30,30 @@ namespace MyApi.Services
         // ============================================================
         //  GET: Gauti visus grojaraščius
         // ============================================================
-        public async Task<IEnumerable<PlaylistResponseDto>> GetAllAsync()
+
+                // ============================================================
+        //  GET: Gauti visus grojaraščius
+        // ============================================================
+        public async Task<IEnumerable<PlaylistResponseDto>> GetAllAsync(int? requesterUserId = null)
         {
             var playlists = await _playlistRepository.GetAllAsync();
             var playlistsList = playlists.ToList();
+
+            IEnumerable<Playlist> accessible = playlistsList;
+
+            if (requesterUserId.HasValue)
+            {
+                var uid = requesterUserId.Value;
+                playlistsList = playlistsList
+                    .Where(p => 
+                        // User is the host
+                        (p.HostId.HasValue && p.HostId.Value == uid) 
+                        || 
+                        // OR user is a collaborator
+                        (p.Users != null && p.Users.Any(u => u.Id == uid))
+                    )
+                    .ToList();
+            }
 
             return _converter.ConvertAll(playlistsList, p => new PlaylistResponseDto
             {
@@ -46,35 +66,50 @@ namespace MyApi.Services
                 {
                     Id = p.Host.Id,
                     Username = p.Host.Username,
-                    Role = p.Host.Role
+                    Role = p.Host.Role,
+                    ProfileImage = p.Host.ProfileImage
                 } : null,
 
                 Songs = p.PlaylistSongs
-    .OrderBy(ps => ps.Position)
-    .Select(ps => new SongDto
-    {
-        Id = ps.Song.Id,
-        Title = ps.Song.Title,
-        Album = ps.Song.Album,
-        DurationFormatted = ps.Song.DurationSeconds.HasValue
-            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-            : null,
-        Position = ps.Position,
-
-        SpotifyId = ps.Song.SpotifyId,
-        SpotifyUri = ps.Song.SpotifyUri,
-
-        Artists = ps.Song.Artists.Select(a => new ArtistDto
-        {
-            Id = a.Id,
-            Name = a.Name
-        }).ToList()
-    }).ToList(),
+                    .OrderBy(ps => ps.Position)
+                    .Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.DurationSeconds,
+                        DurationFormatted = ps.Song.DurationSeconds.HasValue
+                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                            : null,
+                        Position = ps.Position,
+                        
+                        //user tracking
+                        AddedBy = ps.AddedBy != null ? new UserDto
+                        {
+                            Id = ps.AddedBy.Id,
+                            Username = ps.AddedBy.Username,
+                            Role = ps.AddedBy.Role,
+                            ProfileImage = ps.AddedBy.ProfileImage
+                        } : null,
+                        AddedAt = ps.AddedAt,
+                        
+                        //Spotify integration
+                        SpotifyId = ps.Song.SpotifyId,
+                        SpotifyUri = ps.Song.SpotifyUri,
+                        
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Role = u.Role
+                    Role = u.Role,
+                    ProfileImage = u.ProfileImage
                 }).ToList()
             });
         }
@@ -98,35 +133,50 @@ namespace MyApi.Services
                 {
                     Id = p.Host.Id,
                     Username = p.Host.Username,
-                    Role = p.Host.Role
+                    Role = p.Host.Role,
+                    ProfileImage = p.Host.ProfileImage
                 } : null,
 
                 Songs = p.PlaylistSongs
-    .OrderBy(ps => ps.Position)
-    .Select(ps => new SongDto
-    {
-        Id = ps.Song.Id,
-        Title = ps.Song.Title,
-        Album = ps.Song.Album,
-        DurationFormatted = ps.Song.DurationSeconds.HasValue
-            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
-            : null,
-        Position = ps.Position,
-
-        SpotifyId = ps.Song.SpotifyId,
-        SpotifyUri = ps.Song.SpotifyUri,
-
-        Artists = ps.Song.Artists.Select(a => new ArtistDto
-        {
-            Id = a.Id,
-            Name = a.Name
-        }).ToList()
-    }).ToList(),
+                    .OrderBy(ps => ps.Position)
+                    .Select(ps => new SongDto
+                    {
+                        Id = ps.Song.Id,
+                        Title = ps.Song.Title,
+                        Album = ps.Song.Album,
+                        Duration = ps.Song.DurationSeconds,
+                        DurationFormatted = ps.Song.DurationSeconds.HasValue
+                            ? new Duration(ps.Song.DurationSeconds.Value).ToString()
+                            : null,
+                        Position = ps.Position,
+                        
+                        // From your branch - user tracking
+                        AddedBy = ps.AddedBy != null ? new UserDto
+                        {
+                            Id = ps.AddedBy.Id,
+                            Username = ps.AddedBy.Username,
+                            Role = ps.AddedBy.Role,
+                            ProfileImage = ps.AddedBy.ProfileImage
+                        } : null,
+                        AddedAt = ps.AddedAt,
+                        
+                        // From Emilija's branch - Spotify integration
+                        SpotifyId = ps.Song.SpotifyId,
+                        SpotifyUri = ps.Song.SpotifyUri,
+                        
+                        Artists = ps.Song.Artists.Select(a => new ArtistDto
+                        {
+                            Id = a.Id,
+                            Name = a.Name
+                        }).ToList()
+                    }).ToList(),
+                    
                 Collaborators = p.Users.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Role = u.Role
+                    Role = u.Role,
+                    ProfileImage = u.ProfileImage
                 }).ToList()
             });
         }

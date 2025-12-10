@@ -1,14 +1,18 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
-import MainPage from "../pages/protected/main/MainPage";
+
 import LandingPage from "../pages/public/landing/landingPage";
 import LoginPage from "../pages/public/login/loginPage";
 import RegisterPage from "../pages/public/register/registerPage";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { authService } from "../services/authService";
-import CollaborationsPage from "../pages/protected/collaborations/CollaborationsPage";
+import Temp from "../pages/protected/LiveSessions/LiveSessionsPage";
 import Settings from '../pages/public/settings/settingsPage';
+import HomePage from "../pages/protected/home/HomePage";
+import PlaylistDetailPage from "../pages/protected/home/PlaylistDetailPage";
+import PlaylistsPage from "../pages/protected/playlistsPage/playlistsPage";
+import LiveSessionsPage from "../pages/protected/LiveSessions/LiveSessionsPage";
 
 export default function AppRoutes() {
   const navigate = useNavigate();
@@ -22,39 +26,59 @@ export default function AppRoutes() {
 
   return (
     <Routes>
+  
+      
       <Route element={<MainLayout isAuthenticated={isAuthenticated} username={user?.username} onLogout={handleLogout} />}>
 
         {/* Public routes */}
         <Route
         path="/"
-        element={isAuthenticated ? <Navigate to="/main" /> : <LandingPage />}
+        element={isAuthenticated ? <Navigate to="/home" /> : <LandingPage />}
         />
 
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/main" /> : <LoginPage />}
+          element={isAuthenticated ? <Navigate to="/home" /> : <LoginPage />}
         />
 
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/main" /> : <RegisterPage />}
+          element={isAuthenticated ? <Navigate to="/home" /> : <RegisterPage />}
         />
 
-        {/* Protected route */}
+        {/* Protected routes */}
         <Route
-          path="/main"
+          path="/home"
           element={
             <ProtectedRoute>
-              <MainPage />
+              <HomePage />
             </ProtectedRoute>
           }
         />
         
         <Route
-          path="/collaborations"
+          path="/live-sessions"
           element={
             <ProtectedRoute>
-              <CollaborationsPage />
+              <LiveSessionsPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/playlists"
+          element={
+            <ProtectedRoute>
+              <PlaylistsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/playlist/:id"
+          element={
+            <ProtectedRoute>
+              <PlaylistDetailPage />
             </ProtectedRoute>
           }
         />
