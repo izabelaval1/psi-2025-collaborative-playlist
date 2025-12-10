@@ -5,10 +5,10 @@ namespace MyApi.Data;
 
 public partial class PlaylistAppContext : DbContext
 {
-        public PlaylistAppContext(DbContextOptions<PlaylistAppContext> options)
-            : base(options)
-        {
-        }
+    public PlaylistAppContext(DbContextOptions<PlaylistAppContext> options)
+        : base(options)
+    {
+    }
 
     public virtual DbSet<Artist> Artists { get; set; }
     public virtual DbSet<Playlist> Playlists { get; set; }
@@ -33,11 +33,12 @@ public partial class PlaylistAppContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.PasswordHash).HasMaxLength(255).HasColumnName("password_hash");
             entity.Property(e => e.Username).HasMaxLength(50).HasColumnName("username");
+            entity.Property(e => e.ProfileImage).HasColumnName("profile_image");
 
             entity.Property(e => e.Role)
-            .HasColumnName("role")
-            .HasMaxLength(20)
-            .HasConversion<int>(); 
+                .HasColumnName("role")
+                .HasMaxLength(20)
+                .HasConversion<int>(); 
         });
 
         modelBuilder.Entity<Song>(entity =>
@@ -72,16 +73,28 @@ public partial class PlaylistAppContext : DbContext
             entity.Property(e => e.PlaylistId).HasColumnName("playlist_id");
             entity.Property(e => e.SongId).HasColumnName("song_id");
             entity.Property(e => e.Position).HasColumnName("position");
+            
+            // NEW: Configure the AddedBy columns
+            entity.Property(e => e.AddedByUserId).HasColumnName("added_by_user_id");
+            entity.Property(e => e.AddedAt)
+                .HasColumnName("added_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(d => d.Playlist)
-                  .WithMany(p => p.PlaylistSongs)
-                  .HasForeignKey(d => d.PlaylistId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(p => p.PlaylistSongs)
+                .HasForeignKey(d => d.PlaylistId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Song)
-                  .WithMany(p => p.PlaylistSongs)
-                  .HasForeignKey(d => d.SongId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(p => p.PlaylistSongs)
+                .HasForeignKey(d => d.SongId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // NEW: Configure the AddedBy relationship
+            entity.HasOne(d => d.AddedBy)
+                .WithMany()
+                .HasForeignKey(d => d.AddedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Playlist>(entity =>
@@ -93,26 +106,28 @@ public partial class PlaylistAppContext : DbContext
             entity.Property(p => p.Name).HasMaxLength(100).HasColumnName("name");
             entity.Property(p => p.Description).HasColumnName("description");
             entity.Property(p => p.HostId).HasColumnName("host_id");
+            entity.Property(p => p.ImageUrl).HasColumnName("image_url");
 
             entity.HasOne(p => p.Host)
-                  .WithMany(u => u.HostedPlaylists)
-                  .HasForeignKey(p => p.HostId)
-                  .OnDelete(DeleteBehavior.SetNull);
+                .WithMany(u => u.HostedPlaylists)
+                .HasForeignKey(p => p.HostId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasMany(p => p.Users)
-                  .WithMany(u => u.CollaboratingPlaylists)
-                  .UsingEntity<Dictionary<string, object>>(
-                      "playlist_collaborators",
-                      r => r.HasOne<User>().WithMany().HasForeignKey("user_id"),
-                      l => l.HasOne<Playlist>().WithMany().HasForeignKey("playlist_id"),
-                      j =>
-                      {
-                          j.HasKey("playlist_id", "user_id");
-                          j.ToTable("playlist_collaborators");
-                      });
+                .WithMany(u => u.CollaboratingPlaylists)
+                .UsingEntity<Dictionary<string, object>>(
+                    "playlist_collaborators",
+                    r => r.HasOne<User>().WithMany().HasForeignKey("user_id"),
+                    l => l.HasOne<Playlist>().WithMany().HasForeignKey("playlist_id"),
+                    j =>
+                    {
+                        j.HasKey("playlist_id", "user_id");
+                        j.ToTable("playlist_collaborators");
+                    });
         });
 
         OnModelCreatingPartial(modelBuilder);
     }
+    
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

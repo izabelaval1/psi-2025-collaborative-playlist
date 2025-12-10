@@ -1,17 +1,18 @@
-// Bottom player bar showing current track and controls
 import React, { useState, useEffect } from 'react';
+import './SpotifyPlayerBar.scss';
 import { useSpotifyPlayer } from '../context/SpotifyPlayerContext.tsx';
+
+// Lucide Icons
+import { Play, Pause, Volume2 } from 'lucide-react';
 
 const SpotifyPlayerBar: React.FC = () => {
   const { playerState, pause, resume, setVolume } = useSpotifyPlayer();
   const [localPosition, setLocalPosition] = useState(0);
 
-  // Update position locally for smooth progress bar
   useEffect(() => {
     setLocalPosition(playerState.position);
   }, [playerState.position]);
 
-  // Update position every second while playing
   useEffect(() => {
     if (!playerState.isPlaying) return;
 
@@ -25,7 +26,6 @@ const SpotifyPlayerBar: React.FC = () => {
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPosition = parseFloat(e.target.value);
     setLocalPosition(newPosition);
-    //seek(newPosition);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,70 +39,56 @@ const SpotifyPlayerBar: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if ( !playerState.isReady) {
-    return null; // Don't show player if not connected
-  }
-
-  if (!playerState.currentTrack) {
-    return (
-      <div className="fixed bottom-0 left-0 right-0 bg-neutral-900 border-t border-neutral-700 p-3">
-        <div className="flex items-center justify-center text-gray-400 text-sm">
-          No track playing
-        </div>
-      </div>
-    );
-  }
+  if (!playerState.isReady) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-neutral-900 border-t border-neutral-700 p-4 shadow-lg">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="flex items-center gap-4">
-          {/* Track info */}
-          <div className="flex-1 min-w-0">
-            <div className="text-white font-medium truncate">
-              {playerState.currentTrack.title}
-            </div>
-            <div className="text-gray-400 text-sm truncate">
+    <div className="playerbar">
+      {!playerState.currentTrack ? (
+        <div className="playerbar__empty">No track playing</div>
+      ) : (
+        <div className="playerbar__content">
+
+          {/* LEFT — Track Info */}
+          <div className="playerbar__track">
+            <div className="playerbar__title">{playerState.currentTrack.title}</div>
+            <div className="playerbar__artist">
               {playerState.currentTrack.artists.map(a => a.name).join(', ')}
             </div>
           </div>
 
-          {/* Playback controls */}
-          <div className="flex flex-col items-center gap-2 flex-1">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={playerState.isPaused ? resume : pause}
-                className="bg-white text-black rounded-full p-2 hover:scale-105 transition-transform"
-              >
-                {playerState.isPaused ? '▶️' : '⏸️'}
-              </button>
-            </div>
+          {/* CENTER — Play + Progress */}
+          <div className="playerbar__center">
+            <button
+              onClick={playerState.isPaused ? resume : pause}
+              className="playerbar__play"
+            >
+              {playerState.isPaused ? (
+                <Play size={20} />
+              ) : (
+                <Pause size={20} />
+              )}
+            </button>
 
-            {/* Progress bar */}
-            <div className="flex items-center gap-2 w-full">
-              <span className="text-xs text-gray-400 w-10 text-right">
-                {formatTime(localPosition)}
-              </span>
+            <div className="playerbar__progress">
+              <span className="playerbar__time">{formatTime(localPosition)}</span>
+
               <input
                 type="range"
                 min="0"
                 max={playerState.duration || 100}
                 value={localPosition}
                 onChange={handleSeek}
-                className="flex-1 h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #1db954 0%, #1db954 ${(localPosition / playerState.duration) * 100}%, #404040 ${(localPosition / playerState.duration) * 100}%, #404040 100%)`
-                }}
+                className="playerbar__seek"
               />
-              <span className="text-xs text-gray-400 w-10">
-                {formatTime(playerState.duration)}
-              </span>
+
+              <span className="playerbar__time">{formatTime(playerState.duration)}</span>
             </div>
           </div>
 
-          {/* Volume control */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <span className="text-gray-400">🔊</span>
+          {/* RIGHT — Volume */}
+          <div className="playerbar__volume">
+            <Volume2 className="playerbar__volume-icon" size={20} />
+
             <input
               type="range"
               min="0"
@@ -110,14 +96,11 @@ const SpotifyPlayerBar: React.FC = () => {
               step="0.01"
               value={playerState.volume}
               onChange={handleVolumeChange}
-              className="w-24 h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #1db954 0%, #1db954 ${playerState.volume * 100}%, #404040 ${playerState.volume * 100}%, #404040 100%)`
-              }}
+              className="playerbar__volume-slider"
             />
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

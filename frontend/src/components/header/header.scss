@@ -1,0 +1,79 @@
+@use '../../styles/base/variables' as *;
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+
+    &__content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    &__left {
+      a {
+        font-size: 16px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+  
+        & .header__logo-icon {
+          margin-right: 8px;
+        }
+  
+        & .header__logo-text {
+          font-weight: 500;
+          font-size: 16px;
+          color: $foreground-main;
+        }
+      }
+    }
+  
+
+    &__nav {
+      display: flex;
+      gap: 15px;
+  
+      &-link {
+        font-size: 16px;
+        color: $accent-primary;
+        text-decoration: none;
+        font-weight: 300;
+  
+        &:hover {
+          color: $accent-darken;
+        }
+      }
+    }
+  
+
+    &__right {
+      display: flex;
+      align-items: center;
+  
+      & .header__username {
+        margin-right: 20px;
+        font-size: 16px;
+        color: $foreground-secondary;
+      }
+  
+      & .header__logout-button {
+        background-color: $accent-primary;
+        color: #0f1724;
+        font-weight: 600;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+  
+        &:hover {
+          background-color: $accent-darken;
+        }
+      }
+    }
+  }
+  

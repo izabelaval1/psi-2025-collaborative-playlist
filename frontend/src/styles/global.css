@@ -1,59 +1,6 @@
-/* --- DARK THEME OVERRIDES --- */
-
-/* Universal dark background and text reset */
 html, body, #root {
-  background-color: #0b0d0f !important;
-  color: #e6eff1 !important;
-  padding: 8px;
-  font-family: 'Inter'
-}
-
-/* Ensure all Bootstrap-based form controls respect dark theme */
-input, select, textarea, button {
-  background-color: #1a1a1a !important;
-  color: #f1f1f1 !important;
-  border: 1px solid #333 !important;
-}
-
-input::placeholder, textarea::placeholder {
-  color: #a3a3a3 !important;
-}
-
-/* Remove Bootstrap’s white dropdown backgrounds */
-.dropdown-menu, .modal-content, .form-control {
-  background-color: #1a1a1a !important;
-  color: #e5e5e5 !important;
-  border-color: #333 !important;
-}
-
-/* Make sure buttons pop */
-button {
-  background-color: #22c55e !important; /* Tailwind green-500 */
-  color: black !important;
-  font-weight: 600;
-  border: none !important;
-}
-button:hover {
-
-  background-color: #16a34a !important; /* Tailwind green-600 */
-}
-
-/* Fix links (Spotify URLs, etc.) */
-a {
-  color: #22c55e !important;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-  color: #4ade80 !important;
-}
-
-/* Table and cards inside PlaylistDisplay */
-table {
-  color: #e5e5e5 !important;
-}
-th, td {
-  background-color: transparent !important;
-  border-color: #333 !important;
-}
-
+  background-color: #0f1724;
+  color: #e6eef8;
+  font-family: "Inter";
+  padding: 10px;
+}/*# sourceMappingURL=global.css.map */

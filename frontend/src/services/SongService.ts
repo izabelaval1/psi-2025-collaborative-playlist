@@ -1,6 +1,5 @@
-//handles Spotify search and adding songs to a playlist.
-
 import type { Track } from "../types/Spotify";
+import { authService } from "./authService";
 
 const BASE_URL = "http://localhost:5000/api";
 
@@ -13,6 +12,8 @@ export const songService = {
   },
 
   async addToPlaylist(track: Track, playlistId: number) {
+    const currentUser = authService.getUser();
+    
     const songData = {
       PlaylistId: playlistId,
       Title: track.name,
@@ -20,6 +21,10 @@ export const songService = {
       DurationMs: track.duration_ms,
       ArtistNames: track.artists.map(a => a.name),
       
+      //track who added the song
+      AddedByUserId: currentUser?.id,
+      
+      //Spotify integration
       SpotifyId: track.id,
       SpotifyUri: track.uri,
     };

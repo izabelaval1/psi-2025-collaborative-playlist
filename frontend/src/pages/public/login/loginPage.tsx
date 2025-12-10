@@ -40,7 +40,7 @@ const LoginPage = () => {
       await authService.login(values.username, values.password);
 
       setMessage("Logged in successfully!");
-      navigate("/main");
+      navigate("/home");
     } catch (err: any) {
       setMessage(""); 
       setErrors({ general: err.response?.data?.message || "Login failed" });

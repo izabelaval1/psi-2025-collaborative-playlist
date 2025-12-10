@@ -67,10 +67,22 @@ namespace MyApi.Repositories
         {
             var user = await _db.Users.FindAsync(userId);
             if (user == null) return false;
-            
+
             user.ProfileImage = imagePath;
             await _db.SaveChangesAsync();
             return true;
+        }
+        
+        public async Task<IEnumerable<User>> SearchByUsernameAsync(string query, int limit = 10)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return Enumerable.Empty<User>();
+
+            return await _db.Users
+                .Where(u => u.Username.ToLower().Contains(query.ToLower()))
+                .Take(limit)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
     }
