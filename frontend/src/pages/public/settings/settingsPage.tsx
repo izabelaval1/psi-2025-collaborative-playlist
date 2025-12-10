@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Upload } from 'lucide-react';
 import { UserService } from '../../../services/UserService';
+import './SettingsPage.scss';
 
 const API_BASE = "http://localhost:5000";
 
@@ -42,9 +44,9 @@ export default function Settings() {
     setLoading(true);
     try {
       const updatedUser = await UserService.updateProfileImage(user.id, imageFile);
-      setUser(updatedUser); // Atnaujinam state su nauja nuotrauka
+      setUser(updatedUser);
       setImageFile(null);
-      setPreview(null); // Išvalom preview
+      setPreview(null);
       alert('Profile image updated!');
     } catch (err) {
       alert('Failed to update profile image');
@@ -58,43 +60,61 @@ export default function Settings() {
     ? `${API_BASE}${user.profileImage}`
     : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.username || 'User'}`);
 
-  if (!user) return <div className="p-6 text-white">Loading...</div>;
+  if (!user) {
+    return <div className="settings-page__loading">Loading...</div>;
+  }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-white mb-6">Settings</h1>
+    <div className="settings-page">
+      <h1 className="settings-page__title">Settings</h1>
       
-      <div className="bg-neutral-900 rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Profile Picture</h2>
+      <div className="settings-page__section">
+        <h2 className="settings-page__section-title">Profile Picture</h2>
         
-        <div className="flex items-center gap-6">
+        <div className="settings-page__profile-container">
           <img
             src={profileSrc}
             alt="Profile"
-            className="w-32 h-32 rounded-full object-cover border-4 border-green-500" // i neutral jei ka 
+            className="settings-page__profile-image"
           />
           
-          <div className="flex flex-col gap-2">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="text-gray-300 text-sm"
-            />
+          <div className="settings-page__upload-container">
+            <div className="settings-page__file-input-wrapper">
+              <input
+                id="profile-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="settings-page__file-input"
+              />
+              <label htmlFor="profile-upload" className="settings-page__file-label">
+                <Upload size={18} />
+                Choose Image
+              </label>
+              {imageFile && (
+                <p className="settings-page__file-name">
+                  Selected: {imageFile.name}
+                </p>
+              )}
+            </div>
+            
             {imageFile && (
               <button
                 onClick={handleUpload}
                 disabled={loading}
-                className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors"
+                className="settings-page__upload-btn"
               >
-                {loading ? 'Uploading...' : 'Upload'}
+                {loading ? 'Uploading...' : 'Upload Image'}
               </button>
             )}
           </div>
         </div>
         
-        <div className="mt-6 space-y-2 text-gray-300">
-          <p><strong>Username:</strong> {user.username}</p>
+        <div className="settings-page__info-grid">
+          <div className="settings-page__info-item">
+            <strong>Username:</strong>
+            <span>{user.username}</span>
+          </div>
         </div>
       </div>
     </div>

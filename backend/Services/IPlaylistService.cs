@@ -4,7 +4,7 @@ namespace MyApi.Services
 {
     public interface IPlaylistService
     {
-        Task<IEnumerable<PlaylistResponseDto>> GetAllAsync();
+        Task<IEnumerable<PlaylistResponseDto>> GetAllAsync(int? requesterUserId = null);
         Task<PlaylistResponseDto?> GetByIdAsync(int id);
         Task<(bool Success, string? Error, PlaylistResponseDto? Created)> CreateAsync(PlaylistCreateDto newPlaylist);
         Task<(bool Success, string? Error, PlaylistResponseDto? Updated)> UpdateByIdAsync(int id, PlaylistUpdateDto updatedPlaylist);

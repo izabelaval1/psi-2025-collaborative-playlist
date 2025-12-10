@@ -1,0 +1,226 @@
+.playerbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 14px 24px;
+    background: rgba(15, 20, 25, 0.85);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -4px 18px rgba(0,0,0,0.4);
+    font-family: Inter, sans-serif;
+  
+    &__content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+  
+    // LEFT — Track Info
+    &__track {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+  
+    &__cover {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+  
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  
+    &__track-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  
+    &__title {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    &__artist {
+      color: #b3b3b3;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    // CENTER — Controls + Progress
+    &__center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+  
+    &__controls {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+  
+    &__icon-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(6px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e6eef8;
+      cursor: pointer;
+      transition: 0.2s ease;
+  
+      &:hover {
+        background: rgba(255,255,255,0.12);
+        transform: scale(1.08);
+      }
+  
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  
+    &__play {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      background: #1db954;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+  
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+  
+      &:hover {
+        background: #1ed760;
+        transform: scale(1.1);
+      }
+    }
+  
+    // Progress bar
+    &__progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+  
+    &__time {
+      font-size: 11px;
+      color: #b3b3b3;
+      width: 38px;
+      text-align: center;
+    }
+  
+    &__seek {
+      flex: 1;
+      height: 4px;
+      appearance: none;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      cursor: pointer;
+  
+      &::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 4px;
+        background: linear-gradient(
+          to right,
+          #1db954 var(--progress),
+          rgba(255,255,255,0.15) var(--progress)
+        );
+      }
+  
+      &::-webkit-slider-thumb {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        background: #1db954;
+        border-radius: 50%;
+        transform: translateY(-4px);
+        transition: 0.15s ease;
+  
+        &:hover {
+          transform: translateY(-4px) scale(1.1);
+        }
+      }
+    }
+  
+    // RIGHT — Volume
+    &__volume {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 14px;
+    }
+  
+    &__volume-icon {
+      color: #d0d0d0;
+  
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  
+    &__volume-slider {
+      width: 110px;
+      height: 4px;
+      appearance: none;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+      cursor: pointer;
+  
+      &::-webkit-slider-runnable-track {
+        background: linear-gradient(
+          to right,
+          #1db954 var(--volume),
+          rgba(255,255,255,0.15) var(--volume)
+        );
+        height: 4px;
+        border-radius: 4px;
+      }
+  
+      &::-webkit-slider-thumb {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #1db954;
+        margin-top: -4px;
+      }
+    }
+  }
+  

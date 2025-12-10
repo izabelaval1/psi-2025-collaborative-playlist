@@ -19,6 +19,8 @@ namespace MyApi.Repositories
                 .Include(p => p.PlaylistSongs)
                     .ThenInclude(ps => ps.Song)
                         .ThenInclude(s => s.Artists)
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.AddedBy)
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .AsNoTracking()
@@ -38,6 +40,8 @@ namespace MyApi.Repositories
                 .Include(p => p.PlaylistSongs)
                     .ThenInclude(ps => ps.Song)
                         .ThenInclude(s => s.Artists)
+                .Include(p => p.PlaylistSongs)
+                    .ThenInclude(ps => ps.AddedBy)
                 .Include(p => p.Users)
                 .Include(p => p.Host)
                 .FirstOrDefaultAsync(p => p.Id == id);

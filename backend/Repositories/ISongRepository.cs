@@ -7,7 +7,7 @@ namespace MyApi.Repositories
         Task<IEnumerable<Song>> GetAllAsync();
         Task<Song?> GetByIdAsync(int id);
         Task<bool> ExistsAsync(int id);
-        Task AddAsync(Song song);gi
+        Task AddAsync(Song song);
         Task UpdateAsync(Song song);
         Task DeleteAsync(Song song);
 
