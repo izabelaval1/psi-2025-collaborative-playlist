@@ -18,4 +18,3 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "MyApi.dll"]
-```
