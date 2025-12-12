@@ -3,7 +3,7 @@ WORKDIR /app
 
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:.9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ["backend/MyApi.csproj", "backend/"]
 RUN dotnet restore "backend/MyApi.csproj"
