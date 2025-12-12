@@ -13,7 +13,7 @@ function TokenInitializer() {
   const { setSpotifyToken } = useSpotifyPlayer();
 
   useEffect(() => {
-    const token = "BQB5skRCCvUoEnzHLb_cVbIUPImc67LWnYGnxWhb2xRMMeeRg57yMMTILwHO1e-m79NFgtXrvChEnUHunkaWJ9HcbLmmBFRWgyDuFK-3ANkkplwv9iGuISK7EXKlw538UJY4Luid82bmaa4i8eUY2aucOL2g0Pga8em4SBAz9MOMCcqb65ApUQqUy_evz1OixG98o58xOybzK4Is5pGEelye_8Y1_FhceGmwQQN7b6o2x5_TPbje";
+    const token = "BQB0figRO6NR5j3tQICw8aPPqkMHW0yO-5Mj_xncphMp3cJUQu3lzhKPiC-lYzrO9TnqXCK8XPZn1jWHMj1X4mqPBF0zy7igttPFMndJXn1fG2mBfXT0AL95stQflx50HdDsKg96BQ5wTIiIAq4lVTAPukAgi-VmGFX7ho1f1zhlHgwaL-_8xDCcALQmAn6qFkDAv9YJQfYrgRf8TFbipnU0qXybjgTcg8CHhDf_kwR2PZIt";
 
     if (!token) {
       console.error("NO SPOTIFY TOKEN PROVIDED — The player will NOT work.");

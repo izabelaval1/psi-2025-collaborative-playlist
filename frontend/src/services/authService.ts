@@ -1,10 +1,8 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api/auth"; 
+import api from "./api"; 
 
 export const authService = {
   async login(username: string, password: string) {
-    const res = await axios.post(`${API_URL}/login`, {
+    const res = await api.post("auth/login", {
       username,
       password,
     });
@@ -21,7 +19,7 @@ export const authService = {
   },
 
   async register(username: string, password: string, confirmPassword: string) {
-    const res = await axios.post(`${API_URL}/register`, {
+    const res = await api.post("api/auth/register", {
       username,
       password,
       confirmPassword,

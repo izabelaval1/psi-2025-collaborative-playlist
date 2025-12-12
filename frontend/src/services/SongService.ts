@@ -1,18 +1,14 @@
 import type { Track } from "../types/Spotify";
-import { authService } from "./authService";
-
-const BASE_URL = "http://localhost:5000/api";
+import api from "./api";
 
 export const songService = {
   async search(query: string) {
-    const res = await fetch(`${BASE_URL}/Spotify/search/${encodeURIComponent(query)}`);
-    if (!res.ok) throw new Error("Spotify search failed");
-    const data = await res.json();
-    return data.tracks?.items || [];
+    const res = await api.get(`/api/Spotify/search/${encodeURIComponent(query)}`);
+    return res.data?.tracks?.items || [];
   },
 
   async addToPlaylist(track: Track, playlistId: number) {
-    const currentUser = authService.getUser();
+    const currentUser = JSON.parse(localStorage.getItem("user") || "null");
     
     const songData = {
       PlaylistId: playlistId,
@@ -29,13 +25,14 @@ export const songService = {
       SpotifyUri: track.uri,
     };
 
-    const res = await fetch(`${BASE_URL}/song/add-to-playlist`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(songData),
-    });
+    try {
+      await api.post(`/api/song/add-to-playlist`, songData);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || err?.response?.data || err?.message;
 
-    if (res.status === 409) throw new Error("Song already in playlist");
-    if (!res.ok) throw new Error((await res.text()) || "Failed to add song");
+      if (status === 409) throw new Error("Song already in playlist");
+      throw new Error(msg || "Failed to add song");
+    }
   },
 };

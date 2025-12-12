@@ -29,6 +29,8 @@ export default function PlaylistDetailPage() {
 
   const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_URL;
+
   const Equalizer = () => (
     <div className="equalizer">
       <span></span><span></span><span></span>
@@ -148,7 +150,7 @@ export default function PlaylistDetailPage() {
   const getImageUrl = () => {
     if (!playlist?.imageUrl) return `https://picsum.photos/seed/${playlist?.id}/400`;
     if (playlist.imageUrl.startsWith('http')) return playlist.imageUrl;
-    return `http://localhost:5000${playlist.imageUrl.startsWith('/') ? '' : '/'}${playlist.imageUrl}`;
+    return `${API_BASE.replace(/\/$/, "")}${playlist.imageUrl.startsWith("/") ? "" : "/"}${playlist.imageUrl}`;
   };
 
   const formatDuration = (durationMs?: number, seconds?: number) => {
