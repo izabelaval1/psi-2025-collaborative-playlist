@@ -11,8 +11,14 @@ export const PlaylistService = {
     return res.data;
   },
 
-  async create(formData: FormData) {
-    const res = await api.post(`/api/playlists`, formData);
+   async create(input: { name: string; description?: string; hostId: number; imageFile?: File }) {
+    const fd = new FormData();
+    fd.append("name", input.name);
+    if (input.description) fd.append("description", input.description);
+    fd.append("hostId", String(input.hostId));
+    if (input.imageFile) fd.append("imageFile", input.imageFile);
+
+    const res = await api.post("/api/playlists", fd);
     return res.data;
   },
 
