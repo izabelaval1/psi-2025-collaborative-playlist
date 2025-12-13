@@ -16,4 +16,9 @@ public partial class User
     public UserRole Role { get; set; } = UserRole.Guest; // default role
 
     public string? ProfileImage { get; set; }
+
+    
+    public string? SpotifyAccessToken { get; set; }
+    public string? SpotifyRefreshToken { get; set; }
+    public DateTime? SpotifyTokenExpiresAt { get; set; }
 }

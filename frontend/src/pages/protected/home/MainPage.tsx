@@ -8,6 +8,7 @@ import PlaylistModal from "../../../components/PlaylistModal";
 import type { PlaylistResponseDto } from "../../../types/PlaylistResponseDto";
 import type { Playlist } from "../../../types/Playlist";
 import {PlaylistService } from "../../../services/PlaylistService";
+import SpotifyLogin from "../../../components/SpotifyLogin";
 
 export default function MainPage() {
   const [selectedPlaylist, setSelectedPlaylist] =
@@ -31,6 +32,7 @@ export default function MainPage() {
 
   return (
     <>
+    <SpotifyLogin />
       <aside className="left-side w-48 p-4 border-r border-neutral-800">
         <button
           data-testid="new-playlist-btn"
@@ -66,6 +68,7 @@ export default function MainPage() {
           } } />
       )}
     </>
+    
   );
 }
 
