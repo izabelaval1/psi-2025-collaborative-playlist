@@ -1,31 +1,21 @@
 import { authService } from "./authService";
-
-const API_BASE = "http://localhost:5000/api";
+import api from "./api";
 
 export const UserService = {
   async updateProfileImage(userId: number, imageFile: File) {
     const formData = new FormData();
     formData.append('imageFile', imageFile);
 
-    const res = await fetch(`${API_BASE}/users/${userId}/profile-image`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      },
-      body: formData
-    });
+    const res = await api.put(
+      `/api/users/${userId}/profile-image`,
+      formData
+    );
 
-    if (!res.ok) throw new Error('Failed to update profile image');
-    return res.json();
+    return res.data;
   },
 
   async getCurrentUser() {
-    const res = await fetch(`${API_BASE}/users/me`, { // arba /users/{id}
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      }
-    });
-    if (!res.ok) throw new Error('Failed to get user');
-    return res.json();
+    const res = await api.get(`/api/users/me`);
+    return res.data;
   }
 };

@@ -42,6 +42,8 @@ export default function PlaylistDetailPage() {
 
   const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_URL;
+
   const Equalizer = () => (
     <div className="equalizer">
       <span></span>

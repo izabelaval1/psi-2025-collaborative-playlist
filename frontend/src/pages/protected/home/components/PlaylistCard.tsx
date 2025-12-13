@@ -17,6 +17,8 @@ export default function PlaylistCard({ playlist, onClick, onUpdated, onDeleted }
   const [descriptionInput, setDescriptionInput] = useState(playlist.description || "");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const API_BASE = import.meta.env.VITE_API_URL;
+
 
   // Helper function to get the correct image URL
   const getImageUrl = () => {
@@ -30,7 +32,7 @@ export default function PlaylistCard({ playlist, onClick, onUpdated, onDeleted }
     }
 
     // If it's a relative path, prepend the backend base URL
-    const baseUrl = 'http://localhost:5000';
+    const baseUrl =  API_BASE.replace(/\/$/, "");
     const path = playlist.imageUrl.startsWith('/') ? playlist.imageUrl : `/${playlist.imageUrl}`;
     return `${baseUrl}${path}`;
   };
