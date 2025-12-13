@@ -1,6 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, Pause, Shuffle, Search, Clock, Music2, Edit3, Check, X, UserPlus, Users , Trash2} from "lucide-react";
+import {
+  Play,
+  Pause,
+  Shuffle,
+  Search,
+  Clock,
+  Music2,
+  Edit3,
+  Check,
+  X,
+  UserPlus,
+  Users,
+  Trash2,
+} from "lucide-react";
 import { PlaylistService } from "../../../services/PlaylistService";
 import { songService } from "../../../services/SongService";
 import { authService } from "../../../services/authService";
@@ -16,7 +29,7 @@ export default function PlaylistDetailPage() {
   const [playlist, setPlaylist] = useState<PlaylistResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<"recent" | "title" | "artist">("recent");
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [titleInput, setTitleInput] = useState("");
   const [descriptionInput, setDescriptionInput] = useState("");
@@ -31,18 +44,28 @@ export default function PlaylistDetailPage() {
 
   const Equalizer = () => (
     <div className="equalizer">
-      <span></span><span></span><span></span>
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
   );
-  
+
   // Spotify player integration
-  const { play, pause, playerState, spotifyToken, deviceId } = useSpotifyPlayer();
+  const { play, pause, playerState, spotifyToken, deviceId } =
+    useSpotifyPlayer();
 
   const currentUser = authService.getUser();
 
   useEffect(() => {
     loadPlaylist();
   }, [id]);
+
+        useEffect(() => {
+        console.log("Spotify token:", spotifyToken);
+        console.log("Device ID:", deviceId);
+        console.log("Player ready:", playerState.isReady);
+      }, [spotifyToken, deviceId, playerState.isReady]);
+
 
   useEffect(() => {
     if (playlist) {
@@ -86,7 +109,10 @@ export default function PlaylistDetailPage() {
     }
 
     if (!spotifyToken || !deviceId || !playerState.isReady) {
-      alert("Spotify player is not ready. Please connect your Spotify account.");
+
+      alert(
+        "Spotify player is not ready. Please connect your Spotify account."
+      );
       return;
     }
 
@@ -146,16 +172,21 @@ export default function PlaylistDetailPage() {
   };
 
   const getImageUrl = () => {
-    if (!playlist?.imageUrl) return `https://picsum.photos/seed/${playlist?.id}/400`;
-    if (playlist.imageUrl.startsWith('http')) return playlist.imageUrl;
-    return `http://localhost:5000${playlist.imageUrl.startsWith('/') ? '' : '/'}${playlist.imageUrl}`;
+    if (!playlist?.imageUrl)
+      return `https://picsum.photos/seed/${playlist?.id}/400`;
+    if (playlist.imageUrl.startsWith("http")) return playlist.imageUrl;
+    return `http://localhost:5000${
+      playlist.imageUrl.startsWith("/") ? "" : "/"
+    }${playlist.imageUrl}`;
   };
 
   const formatDuration = (durationMs?: number, seconds?: number) => {
-    const totalSeconds = durationMs ? Math.floor(durationMs / 1000) : (seconds || 0);
+    const totalSeconds = durationMs
+      ? Math.floor(durationMs / 1000)
+      : seconds || 0;
     const minutes = Math.floor(totalSeconds / 60);
     const secs = Math.floor(totalSeconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getTotalDuration = () => {
@@ -191,7 +222,10 @@ export default function PlaylistDetailPage() {
     }
     setIsSaving(true);
     try {
-      const payload = { name: titleInput.trim(), description: descriptionInput.trim() };
+      const payload = {
+        name: titleInput.trim(),
+        description: descriptionInput.trim(),
+      };
       const updated = await PlaylistService.update(playlist.id, payload);
       setPlaylist(updated);
       setIsEditing(false);
@@ -205,9 +239,9 @@ export default function PlaylistDetailPage() {
 
   const getSortedSongs = () => {
     if (!playlist?.songs) return [];
-    
+
     const songs = [...playlist.songs];
-    
+
     switch (sortBy) {
       case "title":
         return songs.sort((a, b) => a.title.localeCompare(b.title));
@@ -219,16 +253,26 @@ export default function PlaylistDetailPage() {
         });
       case "recent":
       default:
-        return songs.sort((a, b) => (b.position || b.id) - (a.position || a.id));
+        return songs.sort(
+          (a, b) => (b.position || b.id) - (a.position || a.id)
+        );
     }
   };
 
   if (isLoading) {
-    return <div className="playlist-detail-page playlist-detail-page--loading">Loading...</div>;
+    return (
+      <div className="playlist-detail-page playlist-detail-page--loading">
+        Loading...
+      </div>
+    );
   }
 
   if (!playlist) {
-    return <div className="playlist-detail-page playlist-detail-page--error">Playlist not found</div>;
+    return (
+      <div className="playlist-detail-page playlist-detail-page--error">
+        Playlist not found
+      </div>
+    );
   }
 
   return (
@@ -243,29 +287,44 @@ export default function PlaylistDetailPage() {
             <>
               <h1 className="playlist-detail-page__title">{playlist.name}</h1>
               {playlist.description && (
-                <p className="playlist-detail-page__description">{playlist.description}</p>
+                <p className="playlist-detail-page__description">
+                  {playlist.description}
+                </p>
               )}
               <div className="playlist-detail-page__meta">
-                <span>Created by <strong>{playlist.host?.username || 'Unknown'}</strong></span>
+                <span>
+                  Created by{" "}
+                  <strong>{playlist.host?.username || "Unknown"}</strong>
+                </span>
                 <span>•</span>
                 <span>{getTotalDuration()}</span>
                 <span>•</span>
-                <span>{playlist.songs.length} {playlist.songs.length === 1 ? 'song' : 'songs'}</span>
+                <span>
+                  {playlist.songs.length}{" "}
+                  {playlist.songs.length === 1 ? "song" : "songs"}
+                </span>
               </div>
 
               {playlist.collaborators && playlist.collaborators.length > 0 && (
                 <div className="playlist-detail-page__collaborators">
                   <Users size={14} />
-                  <span>Collaborators: {playlist.collaborators.map(c => c.username).join(', ')}</span>
+                  <span>
+                    Collaborators:{" "}
+                    {playlist.collaborators.map((c) => c.username).join(", ")}
+                  </span>
                 </div>
               )}
 
               <div className="playlist-detail-page__header-actions">
-                <button type="button" className="playlist-detail-page__edit-btn" onClick={handleStartEdit}>
+                <button
+                  type="button"
+                  className="playlist-detail-page__edit-btn"
+                  onClick={handleStartEdit}
+                >
                   <Edit3 size={16} /> Edit
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="playlist-detail-page__edit-btn"
                   onClick={() => setShowCollaboratorModal(true)}
                 >
@@ -288,10 +347,19 @@ export default function PlaylistDetailPage() {
                 placeholder="Add a description (optional)"
               />
               <div className="playlist-detail-page__edit-actions">
-                <button type="button" className="playlist-detail-page__save-btn" onClick={handleSaveEdit} disabled={isSaving}>
-                  <Check size={14} /> {isSaving ? 'Saving...' : 'Save'}
+                <button
+                  type="button"
+                  className="playlist-detail-page__save-btn"
+                  onClick={handleSaveEdit}
+                  disabled={isSaving}
+                >
+                  <Check size={14} /> {isSaving ? "Saving..." : "Save"}
                 </button>
-                <button type="button" className="playlist-detail-page__cancel-btn" onClick={handleCancelEdit}>
+                <button
+                  type="button"
+                  className="playlist-detail-page__cancel-btn"
+                  onClick={handleCancelEdit}
+                >
                   <X size={14} /> Cancel
                 </button>
               </div>
@@ -301,8 +369,8 @@ export default function PlaylistDetailPage() {
       </div>
 
       <div className="playlist-detail-page__controls">
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="playlist-detail-page__btn playlist-detail-page__btn--play"
           onClick={handlePlayPlaylist}
           disabled={!spotifyToken || !deviceId || !playerState.isReady}
@@ -310,17 +378,22 @@ export default function PlaylistDetailPage() {
           <Play size={20} fill="currentColor" />
           Play
         </button>
-        <button type="button" className="playlist-detail-page__btn playlist-detail-page__btn--icon">
+        <button
+          type="button"
+          className="playlist-detail-page__btn playlist-detail-page__btn--icon"
+        >
           <Shuffle size={20} />
           Shuffle
         </button>
-        <button 
-          type="button" 
-          className={`playlist-detail-page__btn playlist-detail-page__btn--icon ${showSongSearch ? 'playlist-detail-page__btn--active' : ''}`}
+        <button
+          type="button"
+          className={`playlist-detail-page__btn playlist-detail-page__btn--icon ${
+            showSongSearch ? "playlist-detail-page__btn--active" : ""
+          }`}
           onClick={() => setShowSongSearch(!showSongSearch)}
         >
           <Search size={20} />
-          {showSongSearch ? 'Close Search' : 'Add Song'}
+          {showSongSearch ? "Close Search" : "Add Song"}
         </button>
       </div>
 
@@ -349,20 +422,27 @@ export default function PlaylistDetailPage() {
           {searchResults.length > 0 && (
             <div className="playlist-detail-page__search-results">
               {searchResults.map((track) => (
-                <div key={track.id} className="playlist-detail-page__search-result">
+                <div
+                  key={track.id}
+                  className="playlist-detail-page__search-result"
+                >
                   {track.album?.images?.[0]?.url && (
-                    <img 
-                      src={track.album.images[0].url} 
+                    <img
+                      src={track.album.images[0].url}
                       alt={track.album.name}
                       className="playlist-detail-page__search-result-cover"
                     />
                   )}
                   <div className="playlist-detail-page__search-result-info">
-                    <div className="playlist-detail-page__search-track-name">{track.name}</div>
+                    <div className="playlist-detail-page__search-track-name">
+                      {track.name}
+                    </div>
                     <div className="playlist-detail-page__search-track-artists">
                       {track.artists.map((a) => a.name).join(", ")}
                     </div>
-                    <div className="playlist-detail-page__search-track-album">{track.album.name}</div>
+                    <div className="playlist-detail-page__search-track-album">
+                      {track.album.name}
+                    </div>
                   </div>
                   <span className="playlist-detail-page__search-track-duration">
                     {formatDuration(track.duration_ms)}
@@ -403,22 +483,28 @@ export default function PlaylistDetailPage() {
         <span className="playlist-detail-page__sort-label">Sort by</span>
         <button
           type="button"
-          className={`playlist-detail-page__sort-btn ${sortBy === 'recent' ? 'playlist-detail-page__sort-btn--active' : ''}`}
-          onClick={() => setSortBy('recent')}
+          className={`playlist-detail-page__sort-btn ${
+            sortBy === "recent" ? "playlist-detail-page__sort-btn--active" : ""
+          }`}
+          onClick={() => setSortBy("recent")}
         >
           Recently added
         </button>
         <button
           type="button"
-          className={`playlist-detail-page__sort-btn ${sortBy === 'title' ? 'playlist-detail-page__sort-btn--active' : ''}`}
-          onClick={() => setSortBy('title')}
+          className={`playlist-detail-page__sort-btn ${
+            sortBy === "title" ? "playlist-detail-page__sort-btn--active" : ""
+          }`}
+          onClick={() => setSortBy("title")}
         >
           By title
         </button>
         <button
           type="button"
-          className={`playlist-detail-page__sort-btn ${sortBy === 'artist' ? 'playlist-detail-page__sort-btn--active' : ''}`}
-          onClick={() => setSortBy('artist')}
+          className={`playlist-detail-page__sort-btn ${
+            sortBy === "artist" ? "playlist-detail-page__sort-btn--active" : ""
+          }`}
+          onClick={() => setSortBy("artist")}
         >
           By artist
         </button>
@@ -435,7 +521,9 @@ export default function PlaylistDetailPage() {
           <span className="playlist-detail-page__col-artist">Artist</span>
           <span className="playlist-detail-page__col-album">Album</span>
           <span className="playlist-detail-page__col-added-by">Added by</span>
-          <span className="playlist-detail-page__col-duration"><Clock size={16} /></span>
+          <span className="playlist-detail-page__col-duration">
+            <Clock size={16} />
+          </span>
           <span className="playlist-detail-page__col-actions"></span>
         </div>
 
@@ -456,16 +544,23 @@ export default function PlaylistDetailPage() {
               return (
                 <div key={song.id} className="playlist-detail-page__track">
                   <div className="playlist-detail-page__track-number">
-                  {isPlaying && playerState.isPlaying ? (
-                    <Equalizer />
-                  ) : (
-                    index + 1
+                    {isPlaying && playerState.isPlaying ? (
+                      <Equalizer />
+                    ) : (
+                      index + 1
                     )}
-
                   </div>
 
-                  <div className={`playlist-detail-page__track-info ${isPlaying ? 'playlist-detail-page__track-info--playing' : ''}`}>
-                    <div className="playlist-detail-page__track-name">{song.title}</div>
+                  <div
+                    className={`playlist-detail-page__track-info ${
+                      isPlaying
+                        ? "playlist-detail-page__track-info--playing"
+                        : ""
+                    }`}
+                  >
+                    <div className="playlist-detail-page__track-name">
+                      {song.title}
+                    </div>
                   </div>
 
                   <div className="playlist-detail-page__track-artist">
@@ -481,7 +576,8 @@ export default function PlaylistDetailPage() {
                   </div>
 
                   <div className="playlist-detail-page__track-duration">
-                    {song.durationFormatted || formatDuration(undefined, song.duration)}
+                    {song.durationFormatted ||
+                      formatDuration(undefined, song.duration)}
                   </div>
 
                   <div className="playlist-detail-page__track-actions">
@@ -490,7 +586,13 @@ export default function PlaylistDetailPage() {
                       onClick={() => handlePlaySong(song.spotifyUri)}
                       className="playlist-detail-page__track-play"
                       disabled={!hasValidUri}
-                      title={hasValidUri ? (isPlaying && playerState.isPlaying ? "Pause" : "Play") : "No Spotify URI"}
+                      title={
+                        hasValidUri
+                          ? isPlaying && playerState.isPlaying
+                            ? "Pause"
+                            : "Play"
+                          : "No Spotify URI"
+                      }
                     >
                       {isPlaying && playerState.isPlaying ? (
                         <Pause size={18} />
@@ -500,16 +602,16 @@ export default function PlaylistDetailPage() {
                     </button>
 
                     <button
-                    type="button"
-                    className="playlist-detail-page__track-delete"
-                    onClick={() => handleRemoveSong(song.id)}
-                    aria-label="Remove song"
-                    title="Remove song"
-                    ><Trash2 size={16} />
+                      type="button"
+                      className="playlist-detail-page__track-delete"
+                      onClick={() => handleRemoveSong(song.id)}
+                      aria-label="Remove song"
+                      title="Remove song"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
-                
               );
             })}
           </div>

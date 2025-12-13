@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import type { Song } from "../types/Song";
 
 interface PlayerState {
@@ -13,8 +19,10 @@ interface PlayerState {
 }
 
 interface SpotifyPlayerContextType {
-  playerState: PlayerState;
   spotifyToken: string | null;
+  setSpotifyToken: (token: string | null) => void;
+  playerState: PlayerState;
+
   deviceId: string | null;
 
   play: (trackUri: string, type?: "track" | "playlist") => Promise<void>;
@@ -22,12 +30,15 @@ interface SpotifyPlayerContextType {
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   setVolume: (volume: number) => Promise<void>;
-  setSpotifyToken: (token: string) => void;
 }
 
-const SpotifyPlayerContext = createContext<SpotifyPlayerContextType | undefined>(undefined);
+const SpotifyPlayerContext = createContext<
+  SpotifyPlayerContextType | undefined
+>(undefined);
 
-export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [playerState, setPlayerState] = useState<PlayerState>({
     isPlaying: false,
     currentTrack: null,
@@ -43,11 +54,46 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [player, setPlayer] = useState<any>(null);
 
-
-  
-  const setSpotifyToken = useCallback((token: string) => {
+  const setSpotifyToken = useCallback((token: string | null) => {
     setSpotifyTokenState(token);
   }, []);
+
+  // Auto-refresh token every 50 minutes
+  useEffect(() => {
+    if (!spotifyToken) return;
+
+    const refreshToken = async () => {
+      const refreshTokenValue = localStorage.getItem('spotifyRefreshToken');
+      if (!refreshTokenValue) return;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/SpotifyAuth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: refreshTokenValue })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('spotifyToken', data.accessToken);
+          setSpotifyTokenState(data.accessToken);
+          console.log('✅ Token refreshed automatically');
+        } else {
+          console.error('Failed to refresh token');
+          localStorage.removeItem('spotifyToken');
+          localStorage.removeItem('spotifyRefreshToken');
+          setSpotifyTokenState(null);
+        }
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+      }
+    };
+
+    // Refresh token every 50 minutes (tokens expire after 1 hour)
+    const interval = setInterval(refreshToken, 50 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [spotifyToken]);
 
   // Initialize Spotify Web Playback SDK
   useEffect(() => {
@@ -62,7 +108,7 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
       spotifyPlayer.addListener("ready", ({ device_id }: any) => {
         setDeviceId(device_id);
-        setPlayerState(prev => ({ ...prev, isReady: true }));
+        setPlayerState((prev) => ({ ...prev, isReady: true }));
       });
 
       spotifyPlayer.addListener("player_state_changed", (state: any) => {
@@ -70,7 +116,7 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const track = state.track_window.current_track;
 
-        setPlayerState(prev => ({
+        setPlayerState((prev) => ({
           ...prev,
           isPlaying: !state.paused,
           isPaused: state.paused,
@@ -126,19 +172,53 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
         body = { context_uri: uri };
       }
 
-      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${spotifyToken}`,
-        },
-        body: JSON.stringify(body),
-      });
+      try {
+        const response = await fetch(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${spotifyToken}`,
+            },
+            body: JSON.stringify(body),
+          }
+        );
 
-      setPlayerState(prev => ({
-        ...prev,
-        currentTrackUri: uri,
-      }));
+        // If token expired (401), try to refresh
+        if (response.status === 401) {
+          console.log('Token expired, attempting refresh...');
+          const refreshTokenValue = localStorage.getItem('spotifyRefreshToken');
+          
+          if (refreshTokenValue) {
+            const refreshResponse = await fetch('http://localhost:5000/api/SpotifyAuth/refresh', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refreshToken: refreshTokenValue })
+            });
+
+            if (refreshResponse.ok) {
+              const data = await refreshResponse.json();
+              localStorage.setItem('spotifyToken', data.accessToken);
+              setSpotifyTokenState(data.accessToken);
+              return;
+            }
+          }
+          
+          // Refresh failed, force re-login
+          localStorage.removeItem('spotifyToken');
+          localStorage.removeItem('spotifyRefreshToken');
+          setSpotifyTokenState(null);
+          alert('Session expired. Please log in again.');
+        }
+
+        setPlayerState((prev) => ({
+          ...prev,
+          currentTrackUri: uri,
+        }));
+      } catch (error) {
+        console.error('Error playing track:', error);
+      }
     },
     [spotifyToken, deviceId]
   );
@@ -147,12 +227,15 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const stop = useCallback(async () => {
     if (!spotifyToken || !deviceId) return;
 
-    await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${spotifyToken}` },
-    });
+    await fetch(
+      `https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${spotifyToken}` },
+      }
+    );
 
-    setPlayerState(prev => ({
+    setPlayerState((prev) => ({
       ...prev,
       isPlaying: false,
       isPaused: true,
@@ -177,7 +260,7 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     async (volume: number) => {
       if (!player) return;
       await player.setVolume(volume);
-      setPlayerState(prev => ({ ...prev, volume }));
+      setPlayerState((prev) => ({ ...prev, volume }));
     },
     [player]
   );
@@ -194,11 +277,18 @@ export const SpotifyPlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     setSpotifyToken,
   };
 
-  return <SpotifyPlayerContext.Provider value={value}>{children}</SpotifyPlayerContext.Provider>;
+  return (
+    <SpotifyPlayerContext.Provider value={value}>
+      {children}
+    </SpotifyPlayerContext.Provider>
+  );
 };
 
 export const useSpotifyPlayer = () => {
   const context = useContext(SpotifyPlayerContext);
-  if (!context) throw new Error("useSpotifyPlayer must be used within SpotifyPlayerProvider");
+  if (!context)
+    throw new Error(
+      "useSpotifyPlayer must be used within SpotifyPlayerProvider"
+    );
   return context;
 };
